@@ -37,17 +37,21 @@ class DijkstraGridOp : public OpKernel {
   void Compute(OpKernelContext* context) override {
     // Grab the input tensor
     const Tensor& input_tensor = context->input(0);
-    auto grid = input_tensor.flat<int32>();
-
+    //auto grid = input_tensor.flat<int32>();
+    
+    auto grid = input_tensor.template flat<int32>();
     // Create an output tensor
     
     //std::vector<int>* output_vector = NULL;
     
     //auto output_vector = outputs[0].vec<int32>();
     
-    Tensor * output = NULL;
+    Tensor * output_tensor = NULL;
     OP_REQUIRES_OK(context, context->allocate_output(
-                                 0, TensorShape({size_x * size_y}), &output));
+                                 0, 
+                                 TensorShape({size_x * size_y}), &output_tensor));
+    
+    auto output = output_tensor->flat<int32>();
     
     Tensor mask1;
     OP_REQUIRES_OK(context, context->allocate_temp(
@@ -60,14 +64,16 @@ class DijkstraGridOp : public OpKernel {
     auto output = output_tensor->flat<int32>();
 
     // Set all but the first element of the output tensor to 0.
-    const int N = input.size();
+    */
+    const int N = grid.size();
     for (int i = 1; i < N; i++) {
-      output(i) = 0;
+      output.data()[i] = grid.data()[i];
+      //std::cout << grid.data()[i];
     }
 
     // Preserve the first input value if possible.
-    if (N > 0) output(0) = input(0);
-    */
+    //if (N > 0) output(0) = input(0);
+    
   }
   private:
     int start_x;

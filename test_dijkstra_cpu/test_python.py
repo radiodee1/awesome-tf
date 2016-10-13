@@ -1,14 +1,27 @@
-import setup
+#!/usr/bin/python
 
-import tensorflow as tf
-dijkstra_grid_module = tf.load_op_library('tensorflow/core/user_ops/dijkstra_grid.so')
+import setup_readfile as setup 
+import dijkstra
+
 
 if __name__ == '__main__': 
-    su = setup.SU()
+    s = setup.SU()
+    d = dijkstra.Dijkstra()
+    
+    d.set_maze(s.get_maze())
+    d.set_startx(s.get_startx())
+    d.set_starty(s.get_starty())
+    d.set_stopx(s.get_endx())
+    d.set_stopy(s.get_endy())
+    d.set_width(s.get_width())
+    d.set_height(s.get_height())
+    
+    d.eval()
+    
+    d.print_output(s.get_maze())
+    print '----'
+    d.print_output(d.get_output())
 
-
-    with tf.Session(''):
-        print(dijkstra_grid_module.dijkstra_grid([[1, 2], [3, 4]]).eval())
         
-    print su.get_height()
+    print s.get_height()
 

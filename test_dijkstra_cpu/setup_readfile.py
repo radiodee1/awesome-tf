@@ -7,8 +7,8 @@ class SU(object):
 
     def __init__(self) :
 
-        self.width = 28#30
-        self.height = 28#30
+        self.width = -1 #28#30
+        self.height = -1 #28#30
 
         
         self.dim = []
@@ -17,9 +17,13 @@ class SU(object):
         self.csv = False
         self.gui = False
         self.output = False
-        self.dim_input = 0
-        self.single_kernel = False
+        #self.dim_input = 0
+        #self.single_kernel = False
 
+        self.startx = 3
+        self.starty = 0# height - 1
+        self.endx = self.width - 3
+        self.endy =  self.height - 1
 
 
         if len(sys.argv) > 1:
@@ -39,6 +43,60 @@ class SU(object):
                 if sys.argv[j] == '-nogui':
                     self.gui = False
         
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-help':
+                    print """
+                    these are the flags:
+                        -size <num>
+                        -output
+                        -nogui
+                        -help
+                        -startx <num>
+                        -starty <num>
+                        -stopx <num>
+                        -stopy <num>
+                        -width <num>
+                        -height <num>
+                    """
+                    exit();
+                    
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-startx':
+                    self.startx = int(sys.argv[j+1])
+                    #if self.dim_input > 480 : self.dim_input = 480
+
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-starty':
+                    self.starty = int(sys.argv[j+1])
+                    #if self.dim_input > 480 : self.dim_input = 480
+
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-stopx':
+                    self.endx = int(sys.argv[j+1])
+                    #if self.dim_input > 480 : self.dim_input = 480
+
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-stopy':
+                    self.endy = int(sys.argv[j+1])
+                    #if self.dim_input > 480 : self.dim_input = 480
+                    
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-height':
+                    self.height = int(sys.argv[j+1])
+                    #print self.height , "height"
+
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-width':
+                    self.width = int(sys.argv[j+1])
+                    
+                    
         if self.gui == True:
             ## 5 is the number of buffers (maze, dist, prev, visited, mutex) ##
             #dimension = int(math.sqrt(cl.device_info.MAX_WORK_GROUP_SIZE / 5))
@@ -63,8 +121,8 @@ class SU(object):
                             if i == 1:
                                 #print 'dim:', line
                                 dim = line.split(',')
-                                self.width = int(dim[0])
-                                self.height = int(dim[1])
+                                if self.width == -1 : self.width = int(dim[0])
+                                if self.height == -1 : self.height = int(dim[1])
                             if i == 2:
                                 #print 'wall-csv:', line
                                 self.wall = line.split(',')
@@ -73,17 +131,13 @@ class SU(object):
         self.starttime = 0
         self.endtime = 0
 
-        self.startx = 3
-        self.starty = 0# height - 1
-        self.endx = self.width - 3
-        self.endy =  self.height - 1
-
+        
         #enum for maze
-        self.OPEN = 1
-        self.WALL = 2
-        self.START = 3
-        self.END = 4
-        self.PATH = 5
+        self.OPEN = 0
+        self.WALL = 1
+        self.START = 2
+        self.END = 3
+        #self.PATH = 5
 
         #enum for visited
         self.VISITED = 1
