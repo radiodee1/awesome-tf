@@ -8,15 +8,15 @@ REGISTER_OP("DijkstraGrid")
     .Attr("stop_y: int = 28")
     .Attr("size_x: int = 28")
     .Attr("size_y: int = 28")
-    .Output("path: int32");
+    .Output("prev: int32");
 
 #include "tensorflow/core/framework/op_kernel.h"
-//#include "tensorflow/core/framework/tensor.h"
+
 
 using namespace tensorflow;
 
 class DijkstraGridOp : public OpKernel {
- public:
+  public:
   explicit DijkstraGridOp(OpKernelConstruction* context) : OpKernel(context) {
   
     OP_REQUIRES_OK(context,
