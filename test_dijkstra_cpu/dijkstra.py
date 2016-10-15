@@ -1,6 +1,13 @@
 import sys
 import tensorflow as tf
 
+START = 2
+STOP = 3
+WALL = 1
+FREE = 0
+PATH = 4
+UNDEFINED = -1
+
 class Dijkstra(object):
 
     def __init__(self) :
@@ -50,24 +57,68 @@ class Dijkstra(object):
     def get_output(self):
         return self.output
         
-    def print_output(self, mz):
+    def print_output(self, mz, path = []):
         output = mz
         
         for y in range (0 , self.height):
             for x in range (0, self.width):
                 #self.maze[ (y * self.width) + x] = self.FREE
                 if self.startx == x and self.starty == y :
-                    self.maze[ (y * self.width) + x] = 2 #self.START
-                if self.stopx == x and self.stopy == y :
-                    self.maze[ (y * self.width) + x] = 3 #self.END
-            
+                    self.maze[ (y * self.width) + x] = START #self.START
+                elif self.stopx == x and self.stopy == y :
+                    self.maze[ (y * self.width) + x] = STOP #self.END
+                #else: self.maze [ (y * self.width) + x] = 0;
         
+        if len(path) > 0: 
+            self.follow_path(path)
+
         for y in range(self.height):
             for x in range(self.width):
                 if ( y * self.width) + x < len(output) :
-                    sys.stdout.write (str(output[(y * self.width) + x]))
+                    symbol = "0"
+                    if self.maze[(y * self.width) + x] == START or \
+                        self.maze[(y * self.width) + x] == STOP: symbol = "X"
+                    if self.maze[(y * self.width) + x] == WALL : symbol = "+"
+                    if self.maze[(y * self.width) + x] == FREE : symbol = "0"
+                    if self.maze[(y * self.width) + x] == PATH : symbol = "*"
+                    sys.stdout.write (symbol) #(str(output[(y * self.width) + x]))
             print
         sys.stdout.flush()
+        
+    def follow_path(self, prev):
+        ## call this after end is found!! ##
+        dim = self.width * self.height 
+        i = 0 
+        foundlist = []
+    
+        found = prev[(self.stopy * self.width) + self.stopx]
+        
+        endloop = False
+        while (found != UNDEFINED ) and  i < dim and not endloop :
+            
+            if found in foundlist: endloop = True
+            
+            if (self.get_x(found) == self.startx and self.get_y(found) == self.starty) : 
+                endloop = True 
+                #print len(foundlist)
+                
+            elif found != UNDEFINED:
+                foundlist.append(int(found))
+            else :
+                print int( found / width), found - (int(found / width) * width), 'y,x'
+            
+            if not endloop: 
+                found = prev[found]
+                i += 1
+            
+        print foundlist, 'found', len(foundlist)
+        
+        i = 0
+        while (i < dim) :
+            if ( i in foundlist) and self.maze[i] != START:
+                self.maze[i] = PATH
+            i += 1    
+        
         
     # start stop
     def set_startx(self , x): self.startx = x
@@ -84,4 +135,7 @@ class Dijkstra(object):
     
     def set_width(self, w): self.width = w
     def set_height(self, h ): self.height = h
+
+    def get_x(self, rank) : return rank - (self.width * int(rank / self.width))
+    def get_y(self, rank) : return int(rank / self.width)
 

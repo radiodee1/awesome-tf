@@ -20,7 +20,7 @@ if __name__ == '__main__':
     
     d.print_output(s.get_maze())
     print '----'
-    d.print_output(d.get_output())
+    d.print_output(s.get_maze() ,d.get_output())
 
         
     print '----'

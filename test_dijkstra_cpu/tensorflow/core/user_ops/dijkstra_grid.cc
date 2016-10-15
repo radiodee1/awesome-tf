@@ -77,6 +77,8 @@ class DijkstraGridOp : public OpKernel {
     
     //std::cout << "type " << typeid(mask).name() << "\n";
     for (int rank = 0; rank < N; rank++) prev.data()[rank] = UNDEFINED;
+    mask.data() [ start_y * size_x + start_x] = VISITED;
+    
     
     while( !found && i < size_x * size_y) {
         i ++;
@@ -172,10 +174,12 @@ class DijkstraGridOp : public OpKernel {
         if (rank - size_x >=0) {
             if (mask.data()[rank - size_x] == VISITED ) return true;
         }
+        /*
         //special start
         if (rank == get_rank(start_x, start_y)) {
-            return true;
+            //return true;
         }
+        */
         
         return false; 
     }
