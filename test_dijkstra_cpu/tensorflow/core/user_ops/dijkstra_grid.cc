@@ -62,7 +62,6 @@ class DijkstraGridOp : public OpKernel {
     OP_REQUIRES_OK(context, context->allocate_temp(
                                 DataTypeToEnum<int32>::value,
                                 TensorShape({size_x * size_y}), &mask_tensor));
-
     auto mask = mask_tensor.template flat<int32>();
     /*
     OP_REQUIRES_OK(context, context->allocate_output(0, input_tensor.shape(),
@@ -72,41 +71,56 @@ class DijkstraGridOp : public OpKernel {
     // Set all but the first element of the output tensor to 0.
     */
     const int N = grid.size();
-    for (int rank = 1; rank < N; rank++) {
-        output.data()[rank] = mask.data()[rank];
-        if (rank < size_x * size_y) {
-            if (mask.data()[rank] != VISITED && mask.data()[rank] != WALL) {
-                //right
-                if (get_y(rank) == get_y(rank + 1) && 
-                    rank + 1 < size_x * size_y && near_visited(rank)) {
-                
+    int i = 0;
+    
+    while( !found && i < size_x * size_y) {
+        i ++;
+        for (int rank = 0; rank < N; rank++) {
+            //output.data()[rank] = mask.data()[rank];
+            if (rank < size_x * size_y) {
+                if (mask.data()[rank] != VISITED && grid.data()[rank] != WALL) {
+                    //right
+                    if (get_y(rank) == get_y(rank + 1) && 
+                            rank + 1 < size_x * size_y && near_visited( rank)) {
+                        must_check(rank + 1, rank);
+                    }
+                    
+                    //left
+                    if (get_y(rank) == get_y(rank - 1) && 
+                            rank - 1 >= 0 && near_visited(rank)) {
+                        must_check(rank -1, rank);
+                    }
+                    //down
+                    if (rank + size_x < size_x * size_y && near_visited(rank)) {
+                        must_check(rank + size_x, rank);
+                    }
+                    //up
+                    if (rank - size_x >=0 && near_visited(rank)) {
+                        must_check(rank - size_x, rank);
+                    }
+                    //start
+                    if (get_x(rank) == start_x && get_y(rank) == start_y) {
+                        must_check(rank, rank);
+                    }
+                    if (near_visited(rank)) {
+                        mask.data()[rank] = VISITED;
+                    }
+                    
+                    if (rank == get_rank(stop_x,stop_y) && mask.data()[rank] == VISITED) {
+                        found = true;
+                    }
                 }
-                
-                //left
-                if (get_y(rank) == get_y(rank - 1) && 
-                    rank - 1 >= 0 && near_visited(rank)) {
-                
-                }
-                //down
-                if (rank + size_x < size_x * size_y && near_visited(rank)) {
-                }
-                //up
-                if (rank - size_x >=0 && near_visited(rank)) {
-                }
-                //start
-                if (get_x(rank) == start_x && get_y(rank) == start_y) {
-                }
-                if (near_visited(rank)) {
-                    mask.data()[rank] = VISITED;
-                }
+            
             }
-        
-        }
 
+        } // for
+    } // while
+
+    
+    //output during testing
+    for (int rank = 0; rank < N; rank++) {
+        output.data()[rank] = mask.data()[rank];
     }
-
-    // Preserve the first input value if possible.
-    //if (N > 0) output(0) = input(0);
     
   }
   
@@ -119,26 +133,44 @@ class DijkstraGridOp : public OpKernel {
     int size_x;
     int size_y;
     
+    bool found = false;
+    
     Tensor mask_tensor;
+    //Tensor mask;
     
     int get_x(int rank) { return rank - (size_x * ( rank / size_x ) ) ; }
     int get_y(int rank) { return rank / size_x ; }
+    int get_rank(int x, int y) {return ( y * size_x ) + x ; }
     
-    bool near_visited(int rank) { 
+    bool near_visited( int rank) { 
         auto mask = mask_tensor.template flat<int32>();
         //right
         if (get_y(rank) == get_y(rank + 1) && rank + 1 < size_x * size_y ) {
+            if (mask.data()[rank + 1] == VISITED ) return true;
         }
         //left
         if (get_y(rank) == get_y(rank - 1) && rank - 1 >= 0 ) {
+            if (mask.data()[rank - 1] == VISITED ) return true;
         }
         //down
+        if (rank + size_x < size_x * size_y) {
+            if (mask.data()[rank + size_x] == VISITED ) return true;
+        }
         //up
+        if (rank - size_x >=0) {
+            if (mask.data()[rank - size_x] == VISITED ) return true;
+        }
+        //special start
+        if (rank == get_rank(start_x, start_y)) {
+            return true;
+        }
         
-        
-        return true; 
+        return false; 
     }
   
+    void must_check(int test , int rank) {
+        auto mask = mask_tensor.template flat<int32>();
+    }
 };
 
 REGISTER_KERNEL_BUILDER(Name("DijkstraGrid").Device(DEVICE_CPU), DijkstraGridOp);
