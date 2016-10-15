@@ -3,6 +3,7 @@
 #define WALL 1
 #define FREE 0
 #define VISITED 2
+#define UNDEFINED 0
 
 
 REGISTER_OP("DijkstraGrid")
@@ -41,15 +42,12 @@ class DijkstraGridOp : public OpKernel {
 
   void Compute(OpKernelContext* context) override {
     // Grab the input tensor
-    const Tensor& input_tensor = context->input(0);
+    //const Tensor& input_tensor = context->input(0);
     //auto grid = input_tensor.flat<int32>();
-    
+    input_tensor = context->input(0);
     auto grid = input_tensor.template flat<int32>();
     // Create an output tensor
     
-    //std::vector<int>* output_vector = NULL;
-    
-    //auto output_vector = outputs[0].vec<int32>();
     
     Tensor * output_tensor = NULL;
     OP_REQUIRES_OK(context, context->allocate_output(
@@ -58,20 +56,27 @@ class DijkstraGridOp : public OpKernel {
     
     auto output = output_tensor->flat<int32>();
     
-    //Tensor  mask_tensor;
+    
     OP_REQUIRES_OK(context, context->allocate_temp(
                                 DataTypeToEnum<int32>::value,
                                 TensorShape({size_x * size_y}), &mask_tensor));
     auto mask = mask_tensor.template flat<int32>();
-    /*
-    OP_REQUIRES_OK(context, context->allocate_output(0, input_tensor.shape(),
-                                                     &output_tensor));
-    auto output = output_tensor->flat<int32>();
-
-    // Set all but the first element of the output tensor to 0.
-    */
+    
+    OP_REQUIRES_OK(context, context->allocate_temp(
+                                DataTypeToEnum<int32>::value,
+                                TensorShape({size_x * size_y}), &dist_tensor));
+    auto dist = dist_tensor.template flat<int32>();
+    
+    OP_REQUIRES_OK(context, context->allocate_temp(
+                                DataTypeToEnum<int32>::value,
+                                TensorShape({size_x * size_y}), &prev_tensor));
+    auto prev = prev_tensor.template flat<int32>();
+    
     const int N = grid.size();
     int i = 0;
+    
+    //std::cout << "type " << typeid(mask).name() << "\n";
+    for (int rank = 0; rank < N; rank++) prev.data()[rank] = UNDEFINED;
     
     while( !found && i < size_x * size_y) {
         i ++;
@@ -116,11 +121,13 @@ class DijkstraGridOp : public OpKernel {
         } // for
     } // while
 
+    //test();
     
-    //output during testing
+    //output 
     for (int rank = 0; rank < N; rank++) {
-        output.data()[rank] = mask.data()[rank];
+        output.data()[rank] = prev.data()[rank];
     }
+    
     
   }
   
@@ -136,7 +143,10 @@ class DijkstraGridOp : public OpKernel {
     bool found = false;
     
     Tensor mask_tensor;
-    //Tensor mask;
+    Tensor dist_tensor;
+    Tensor prev_tensor;
+    Tensor input_tensor;
+    
     
     int get_x(int rank) { return rank - (size_x * ( rank / size_x ) ) ; }
     int get_y(int rank) { return rank / size_x ; }
@@ -144,6 +154,8 @@ class DijkstraGridOp : public OpKernel {
     
     bool near_visited( int rank) { 
         auto mask = mask_tensor.template flat<int32>();
+        
+        
         //right
         if (get_y(rank) == get_y(rank + 1) && rank + 1 < size_x * size_y ) {
             if (mask.data()[rank + 1] == VISITED ) return true;
@@ -170,6 +182,26 @@ class DijkstraGridOp : public OpKernel {
   
     void must_check(int test , int rank) {
         auto mask = mask_tensor.template flat<int32>();
+        auto dist = dist_tensor.template flat<int32>();
+        auto grid = input_tensor.template flat<int32>();
+        auto prev = prev_tensor.template flat<int32>();
+        
+        if (mask.data()[rank] != VISITED && grid.data()[rank] != WALL) {
+            if (dist.data()[rank] + 1 <= dist.data()[test] || dist.data()[test] == UNDEFINED) {
+                if (rank != get_rank(start_x, start_y)) {
+                    prev.data()[test] = rank;
+                    dist.data()[test] = dist.data()[rank] + 1;
+                }
+            
+            }
+        }
+    }
+    
+    void test() {
+        auto grid = input_tensor.template flat<int32>();
+        auto prev = prev_tensor.template flat<int32>();
+        for (int rank = 0; rank < grid.size(); rank++) prev.data()[rank] = grid.data()[rank];
+        //prev.data()[8*7] = 7*7;
     }
 };
 

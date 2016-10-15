@@ -23,5 +23,5 @@ if __name__ == '__main__':
     d.print_output(d.get_output())
 
         
-    print s.get_height()
+    print '----'
 
