@@ -2,11 +2,12 @@
 
 #include "tensorflow/core/framework/op.h"
 
-#define WALL 1
+#define WALL -1
 #define FREE 0
 #define VISITED 1
 #define UNDEFINED 0
 
+#define WALL_MULT 100
 
 REGISTER_OP("DijkstraGrid")
     .Input("grid: int32")
@@ -77,56 +78,89 @@ class DijkstraGridOp : public OpKernel {
     auto prev = prev_tensor.template flat<int32>();
     
     const int N = grid.size();
-    int i = 0;
+    //int i = 0;
+    step = 0;
     
     //std::cout << "check " << get_y(0) << "\n";
     for (int rank = 0; rank < N; rank++) prev.data()[rank] = UNDEFINED;
-    mask.data() [start_y * size_x + start_x] = VISITED;
+    mask.data() [start_y * size_x + start_x] = 1;//VISITED;
     prev.data()[start_y * size_x + start_x] = 0;
-    //mask.data()[rank] = VISITED;
+
     dist.data()[start_y * size_x + start_x] = 0;
-    std::cout << "start!!\n" ;
+    std::cout << ( 3 == get_rank(get_x(3),get_y(3)) )  << " start!!\n" ;
     
-    while( !found && i < size_x * size_y) {
-        i ++;
+    while( !found && step < size_x * size_y +1) {
+        step ++;
+        std::cout << step << " = while loop i \n";
+        print();
         for (int rank = 0; rank < N; rank++) {
             
-            if (true) { // rank < size_x * size_y) {
+            if (! found) { // rank < size_x * size_y) {
             
-                //start
-                /*
-                if (get_x(rank) == start_x && get_y(rank) == start_y) {
-                    prev.data()[rank] = rank;
-                    mask.data()[rank] = VISITED;
-                    dist.data()[rank] = 0;
-                    std::cout << "start!!\n" ;
-                    //must_check(rank, rank);
+                if (get_x(rank) == stop_x && get_y(rank) == stop_y && mask.data()[rank] != UNDEFINED ) {
+                    found = true;
+                    std::cout << "stop here !!\n" ;
                 }
-                */
-            
-                if (   mask.data()[rank] != VISITED ){//&& grid.data()[rank] != WALL) {
+                if ( true || mask.data()[rank] != WALL ) { // UNDEFINED || true ){//&& grid.data()[rank] != WALL) {
                     //right
                     if (get_y(rank) == get_y(rank + 1) && 
-                            rank + 1 < size_x * size_y && near_visited( rank)) {
-                        must_check(rank + 1, rank);
+                            rank + 1 < size_x * size_y && near_visited( rank) ) { //&&
+                        std::cout << "right\n";
+                        if (! wall_found(rank+1,rank)) {
+                            
+                            
+                            must_check(rank + 1, rank);
+                            //break;
+                        }
+                        else {
+                            mask.data()[rank  ] = WALL;
+                        }
                     }
                     
                     //left
                     if (get_y(rank) == get_y(rank - 1) && 
-                            rank - 1 >= 0 && near_visited(rank)) {
-                        must_check(rank -1, rank);
+                            rank - 1 >= 0 && near_visited(rank) ){//&&
+                            
+                        std::cout << "left\n";
+                        if (! wall_found(rank -1, rank)) {
+                            
+                            
+                            must_check(rank -1, rank);
+                            //break;
+                        }
+                        else {
+                            mask.data()[rank ] = WALL;
+                        }
                     }
                     //down
-                    if (rank + size_x < size_x * size_y && near_visited(rank)) {
-                        must_check(rank + size_x, rank);
+                    if (rank + size_x < size_x * size_y && near_visited(rank) ){//&&
+                        std::cout << "down\n";
+                        if(! wall_found(rank+ size_x, rank) ) {
+                            
+                            
+                            must_check(rank + size_x, rank);
+                            //break;
+                        }
+                        else {
+                            mask.data()[rank ] = WALL;
+                        }
                     }
                     //up
-                    if (rank - size_x >=0 && near_visited(rank)) {
-                        must_check(rank - size_x, rank);
+                    if (rank - size_x >=0 && near_visited(rank) ) { // &&
+                        std::cout << "up\n";
+                        if (! wall_found(rank - size_x, rank) ) {
+                        
+                            
+                            must_check(rank - size_x, rank);
+                            //break;
+                        }
+                        else {
+                            mask.data()[rank] = WALL;
+                        }
                     }
                     
-                    if (near_visited(rank)) {
-                        mask.data()[rank] = VISITED;
+                    if (near_visited(rank) || get_rank(start_x, start_y) == rank) {
+                        mask.data()[rank] = step;//VISITED;
                     }
                     /*
                     if (rank == get_rank(stop_x,stop_y) && mask.data()[rank] == VISITED) {
@@ -143,13 +177,14 @@ class DijkstraGridOp : public OpKernel {
     } // while
 
     //test();
-    std::cout << "test " << wall_height << "\n";
+    std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
     
     //output 
     for (int rank = 0; rank < N; rank++) {
         output.data()[rank] = prev.data()[rank];
     }
     
+    print();
     
   }
   
@@ -161,6 +196,8 @@ class DijkstraGridOp : public OpKernel {
     int stop_y;
     int size_x;
     int size_y;
+    
+    int step = 0;
     
     bool found = false;
     
@@ -178,24 +215,26 @@ class DijkstraGridOp : public OpKernel {
     bool near_visited( int rank) { 
         auto mask = mask_tensor.template flat<int32>();
         
-        if (mask.data()[rank] == VISITED) {
+        if(found) return false;
+        
+        if (mask.data()[rank] != UNDEFINED ) {
             return false;
         }
         //right
-        if (get_y(rank) == get_y(rank + 1) && rank + 1 < size_x * size_y ) {
-            if (mask.data()[rank + 1] == VISITED ) return true;
+        if (get_y(rank) == get_y(rank + 1) && rank + 1 <= size_x * size_y ) {
+            if (mask.data()[rank + 1] != UNDEFINED ) return true;
         }
         //left
         if (get_y(rank) == get_y(rank - 1) && rank - 1 >= 0 ) {
-            if (mask.data()[rank - 1] == VISITED ) return true;
+            if (mask.data()[rank - 1] != UNDEFINED ) return true;
         }
         //down
         if (rank + size_x < size_x * size_y) {
-            if (mask.data()[rank + size_x] == VISITED ) return true;
+            if (mask.data()[rank + size_x] != UNDEFINED ) return true;
         }
         //up
         if (rank - size_x >=0) {
-            if (mask.data()[rank - size_x] == VISITED ) return true;
+            if (mask.data()[rank - size_x] != UNDEFINED ) return true;
         }
         /*
         //special start
@@ -215,22 +254,24 @@ class DijkstraGridOp : public OpKernel {
         auto grid = input_tensor.template flat<int32>();
         auto prev = prev_tensor.template flat<int32>();
         
-        float a = 100 * sqrt ( 1 + pow(grid.data()[test] - grid.data()[rank], 2) );
+        float a = WALL_MULT * sqrt ( 1 + pow(grid.data()[test] - grid.data()[rank], 2) );
         int d =  dist.data()[rank] + (int) a;
         //bool iswall = (a > wall_height);
         
-        std::cout << dist.data()[rank] << " " << a << " " << rank << " " << ( a <= wall_height) <<  "\n"; 
+        std::cout << rank << " " << test << " " << grid.data()[test] << " " << grid.data()[rank] << " " << a << " " << ( wall_found(test,rank) ) <<  "\n"; 
         
-        if (get_x(rank) == stop_x && get_y(rank) == stop_y ) {
-            found = true;//&& mask.data()[rank] == VISITED) found = true;
-            std::cout << "stop here 2 !!\n" ;
-        }
-        
-        if ( a <= wall_height * 100) { //grid.data()[rank] != WALL) {
 
-            if ((d < dist.data()[test] || dist.data()[test] == UNDEFINED) ){// && a >= wall_height) {
-                if (test != get_rank(start_x, start_y)) {
+        if (mask.data()[rank] == UNDEFINED) mask.data()[rank] = step;//VISITED;
+        
+        
+        if ( true || ! wall_found(test, rank) ){//&& mask.data()[rank] != WALL) {
+            
+
+            
+            if ((d < dist.data()[test] || dist.data()[test] == 0)  ){// && prev.data()[rank] != WALL){
+                if ( true || get_x(rank) != start_x || get_y(rank) != start_y) {
                     
+
                     prev.data()[test] = rank;
                     dist.data()[test] = d;//dist.data()[rank] + d;
                     
@@ -239,13 +280,33 @@ class DijkstraGridOp : public OpKernel {
             
             }
         }
+        else {
+            //mask.data()[test] = WALL;
+            //prev.data()[test] = 0;
+        }
     }
     
-    void test() {
+    bool wall_found(int test, int rank) {
+        auto mask = mask_tensor.template flat<int32>();
         auto grid = input_tensor.template flat<int32>();
+        float a = WALL_MULT * sqrt ( 1 + pow(grid.data()[test] - grid.data()[rank], 2) );
+        if (a > wall_height * WALL_MULT || mask.data()[test] == WALL) {
+            std::cout << test << " " << rank << " " << a << " -- wall!!\n";
+            return true; // true!!
+        }
+        return false;
+    }
+    
+    void print() {
+        auto mask = mask_tensor.template flat<int32>();
         auto prev = prev_tensor.template flat<int32>();
-        for (int rank = 0; rank < grid.size(); rank++) prev.data()[rank] = grid.data()[rank];
-        //prev.data()[8*7] = 7*7;
+        for (int rank = 0; rank < mask.size(); rank++) {
+            std::cout << mask.data()[rank] << ",";// = grid.data()[rank];
+            if (rank % size_x == size_x - 1) std::cout << "\n";
+        }
+        std::cout << "\n";
+
+        
     }
 };
 

@@ -8,7 +8,12 @@ if __name__ == '__main__':
     s = setup.SU()
     d = dijkstra.Dijkstra()
     
-    d.set_maze(s.get_maze())
+    maze = s.get_maze()
+    #print maze
+    for i in range(len(maze)):
+        if maze[i] == 1 : maze[i] = 5
+    
+    d.set_maze(maze)
     d.set_startx(s.get_startx())
     d.set_starty(s.get_starty())
     d.set_stopx(s.get_endx())
@@ -18,10 +23,14 @@ if __name__ == '__main__':
     
     d.eval()
     
-    #d.print_output(s.get_maze() )
+    d.print_output(s.get_maze() )
     print '----'
+    d.set_special_printout(True)
     d.print_output(s.get_maze() ,d.get_output())
 
         
     print '----'
+    d.set_special_printout(False)
+    d.print_output(s.get_maze() ,d.get_output())
+
 

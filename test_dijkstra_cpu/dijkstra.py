@@ -40,7 +40,7 @@ class Dijkstra(object):
         self.visited = []
         
     def eval(self):
-        print (self.width, self.height)
+        print  self.maze
         
         with tf.Session(''):
             self.output = self.dijkstra_grid_module.dijkstra_grid(
@@ -51,7 +51,7 @@ class Dijkstra(object):
                     stop_y = self.stopy,
                     size_x = self.width,
                     size_y = self.height,
-                    wall_height = 1.0
+                    wall_height = 1.5
                 ).eval()
         
         
@@ -80,13 +80,13 @@ class Dijkstra(object):
                     symbol = "0"
                     if self.maze[(y * self.width) + x] == START or \
                         self.maze[(y * self.width) + x] == STOP: symbol = "X"
-                    if self.maze[(y * self.width) + x] == WALL : symbol = "+"
-                    if self.maze[(y * self.width) + x] == FREE : symbol = "0"
-                    if self.maze[(y * self.width) + x] == APATH : 
-                        symbol = "*"
-                        #print symbol
+                    elif self.maze[(y * self.width) + x] == FREE : symbol = "0"
+                    elif self.maze[(y * self.width) + x] == APATH : symbol = "*"
+                    elif self.maze[(y * self.width) + x] >= WALL : symbol = "+"
                     
-                    #if self.special_printout : symbol = (str(path[(y * self.width) + x])) + ","
+                    if self.special_printout : 
+                        symbol = (str(path[(y * self.width) + x])) + ","
+                        if len(symbol) == 2 : symbol = " " + symbol
                     
                     sys.stdout.write (symbol) #(str(output[(y * self.width) + x]))
             
@@ -103,20 +103,21 @@ class Dijkstra(object):
         print found, "stop"
         
         endloop = False
-        while (found != UNDEFINED ) and  i < dim and not endloop :
+        while (found != UNDEFINED or True ) and  i < dim and not endloop :
             
-            if found in foundlist: endloop = True
+            #if found in foundlist: endloop = True
             
             if (self.get_x(found) == self.startx and self.get_y(found) == self.starty) : 
                 endloop = True 
                 #print len(foundlist)
                 
-            elif found != UNDEFINED  :
+            if found != UNDEFINED  :
                 if not endloop: foundlist.append(int(found))
             else :
                 print int( found / width), found - (int(found / width) * width), 'y,x'
             
             if not endloop: 
+                #if self.special_printout : print found, prev[found]
                 found = prev[found]
                 i += 1
             
@@ -147,6 +148,8 @@ class Dijkstra(object):
     
     def set_width(self, w): self.width = w
     def set_height(self, h ): self.height = h
+    
+    def set_special_printout(self, s) : self.special_printout = s 
 
     def get_x(self, rank) : return rank - (self.width * int(rank / self.width))
     def get_y(self, rank) : return int(rank / self.width)
