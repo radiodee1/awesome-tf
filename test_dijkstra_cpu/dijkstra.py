@@ -5,7 +5,7 @@ START = 2
 STOP = 3
 WALL = 1
 FREE = 0
-PATH = 4
+APATH = 4
 UNDEFINED = -1
 
 class Dijkstra(object):
@@ -26,7 +26,7 @@ class Dijkstra(object):
         #self.gui = False
         #self.output = False
         #self.dim_input = 0
-        #self.single_kernel = False
+        self.special_printout = False
 
         self.startx = 3
         self.starty = 0# height - 1
@@ -50,7 +50,8 @@ class Dijkstra(object):
                     stop_x = self.stopx,
                     stop_y = self.stopy,
                     size_x = self.width,
-                    size_y = self.height
+                    size_y = self.height,
+                    wall_height = 1.0
                 ).eval()
         
         
@@ -69,7 +70,8 @@ class Dijkstra(object):
                     self.maze[ (y * self.width) + x] = STOP #self.END
                 #else: self.maze [ (y * self.width) + x] = 0;
         
-        if len(path) > 0: 
+        if len(path) > 0 : 
+            #self.special_printout = True
             self.follow_path(path)
 
         for y in range(self.height):
@@ -80,8 +82,14 @@ class Dijkstra(object):
                         self.maze[(y * self.width) + x] == STOP: symbol = "X"
                     if self.maze[(y * self.width) + x] == WALL : symbol = "+"
                     if self.maze[(y * self.width) + x] == FREE : symbol = "0"
-                    if self.maze[(y * self.width) + x] == PATH : symbol = "*"
+                    if self.maze[(y * self.width) + x] == APATH : 
+                        symbol = "*"
+                        #print symbol
+                    
+                    #if self.special_printout : symbol = (str(path[(y * self.width) + x])) + ","
+                    
                     sys.stdout.write (symbol) #(str(output[(y * self.width) + x]))
+            
             print
         sys.stdout.flush()
         
@@ -92,6 +100,7 @@ class Dijkstra(object):
         foundlist = []
     
         found = prev[(self.stopy * self.width) + self.stopx]
+        print found, "stop"
         
         endloop = False
         while (found != UNDEFINED ) and  i < dim and not endloop :
@@ -102,8 +111,8 @@ class Dijkstra(object):
                 endloop = True 
                 #print len(foundlist)
                 
-            elif found != UNDEFINED:
-                foundlist.append(int(found))
+            elif found != UNDEFINED  :
+                if not endloop: foundlist.append(int(found))
             else :
                 print int( found / width), found - (int(found / width) * width), 'y,x'
             
@@ -115,8 +124,11 @@ class Dijkstra(object):
         
         i = 0
         while (i < dim) :
-            if ( i in foundlist) and self.maze[i] != START:
-                self.maze[i] = PATH
+            if ( int(i) in foundlist) :#and self.maze[i] != START:
+                symbol = int(APATH)
+                if  self.special_printout : symbol = i
+                self.maze[i] = int(symbol) #PATH
+                #print i, APATH, symbol
             i += 1    
         
         

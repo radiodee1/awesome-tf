@@ -64,37 +64,37 @@ class SU(object):
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-startx':
-                    self.startx = int(sys.argv[j+1])
+                    self.startx = int(sys.argv[j+1]) -1
                     #if self.dim_input > 480 : self.dim_input = 480
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-starty':
-                    self.starty = int(sys.argv[j+1])
+                    self.starty = int(sys.argv[j+1]) -1
                     #if self.dim_input > 480 : self.dim_input = 480
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-stopx':
-                    self.endx = int(sys.argv[j+1])
+                    self.endx = int(sys.argv[j+1]) -1
                     #if self.dim_input > 480 : self.dim_input = 480
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-stopy':
-                    self.endy = int(sys.argv[j+1])
+                    self.endy = int(sys.argv[j+1]) -1
                     #if self.dim_input > 480 : self.dim_input = 480
                     
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-height':
-                    self.height = int(sys.argv[j+1])
+                    self.height = int(sys.argv[j+1]) 
                     #print self.height , "height"
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-width':
-                    self.width = int(sys.argv[j+1])
+                    self.width = int(sys.argv[j+1]) 
                     
                     
         if self.gui == True:
@@ -134,9 +134,9 @@ class SU(object):
         
         #enum for maze
         self.OPEN = 0
-        self.WALL = 1
-        self.START = 2
-        self.END = 3
+        self.WALL = 1 # * 10
+        self.START = 0 # 2
+        self.END = 0 # 3
         #self.PATH = 5
 
         #enum for visited
@@ -152,6 +152,7 @@ class SU(object):
         self.prev = [self.UNDEFINED] * (self.width * self.height)
         self.visited = [0] * (self.width * self.height)
 
+        """
         for y in range (0 , self.height):
             for x in range (0, self.width):
                 self.maze[ (y * self.width) + x] = self.FREE
@@ -159,11 +160,11 @@ class SU(object):
                     self.maze[ (y * self.width) + x] = self.START
                 if self.endx == x and self.endy == y :
                     self.maze[ (y * self.width) + x] = self.END
-            
+        """
 
         self.dist[(self.starty * self.width) + self.startx] = 0
 
-        self.maze[(self.starty * self.width) + self.startx] = self.START
+        #self.maze[(self.starty * self.width) + self.startx] = self.START
 
         # wall from file input
         if self.csv == True:
