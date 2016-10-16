@@ -104,7 +104,7 @@ class DijkstraGridOp : public OpKernel {
                 }
                 */
             
-                if ( true ) { //near_visited(rank) ){//  mask.data()[rank] != VISITED ){//&& grid.data()[rank] != WALL) {
+                if (   mask.data()[rank] != VISITED ){//&& grid.data()[rank] != WALL) {
                     //right
                     if (get_y(rank) == get_y(rank + 1) && 
                             rank + 1 < size_x * size_y && near_visited( rank)) {
@@ -221,6 +221,11 @@ class DijkstraGridOp : public OpKernel {
         
         std::cout << dist.data()[rank] << " " << a << " " << rank << " " << ( a <= wall_height) <<  "\n"; 
         
+        if (get_x(rank) == stop_x && get_y(rank) == stop_y ) {
+            found = true;//&& mask.data()[rank] == VISITED) found = true;
+            std::cout << "stop here 2 !!\n" ;
+        }
+        
         if ( a <= wall_height * 100) { //grid.data()[rank] != WALL) {
 
             if ((d < dist.data()[test] || dist.data()[test] == UNDEFINED) ){// && a >= wall_height) {
@@ -228,10 +233,7 @@ class DijkstraGridOp : public OpKernel {
                     
                     prev.data()[test] = rank;
                     dist.data()[test] = d;//dist.data()[rank] + d;
-                    if (get_x(rank) == stop_x && get_y(rank) == stop_y ) {
-                        found = true;//&& mask.data()[rank] == VISITED) found = true;
-                        std::cout << "stop here 2 !!\n" ;
-                    }
+                    
                 }
                 
             
