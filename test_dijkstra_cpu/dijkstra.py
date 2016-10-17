@@ -93,13 +93,15 @@ class Dijkstra(object):
             print
         sys.stdout.flush()
         
+        print 3 == self.get_rank(self.get_x(3), self.get_y(3)), self.get_x(3), self.get_y(3), "calibrate!!"
+        
     def follow_path(self, prev):
         ## call this after end is found!! ##
         dim = self.width * self.height 
         i = 0 
         foundlist = []
     
-        found = prev[(self.stopy * self.width) + self.stopx]
+        found = prev[((self.stopy ) * self.width) + (   self.stopx ) ]
         print found, "stop"
         
         endloop = False
@@ -153,4 +155,5 @@ class Dijkstra(object):
 
     def get_x(self, rank) : return rank - (self.width * int(rank / self.width))
     def get_y(self, rank) : return int(rank / self.width)
+    def get_rank(self, x, y ) : return ( y * self.width ) + x
 
