@@ -105,7 +105,7 @@ class Dijkstra(object):
         print found, "stop"
         
         endloop = False
-        while (found != UNDEFINED or True ) and  i < dim and not endloop :
+        while (found != -1  ) and  i < dim and not endloop :
             
             #if found in foundlist: endloop = True
             
@@ -120,7 +120,7 @@ class Dijkstra(object):
             
             if not endloop: 
                 #if self.special_printout : print found, prev[found]
-                found = prev[found]
+                if (found != -1) : found = prev[found]
                 i += 1
             
         print foundlist, 'found', len(foundlist)

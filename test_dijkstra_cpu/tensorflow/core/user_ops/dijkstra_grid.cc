@@ -84,7 +84,7 @@ class DijkstraGridOp : public OpKernel {
     
     for (int rank = 0; rank < N; rank++) prev.data()[rank] = UNDEFINED;
     mask.data() [get_rank(start_x, start_y)] = VISITED;
-    prev.data()[get_rank(start_x, start_y)] = 0;
+    prev.data()[get_rank(start_x, start_y)] = -1;
 
     dist.data()[get_rank(start_x, start_y)] = 1;
 
