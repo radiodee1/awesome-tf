@@ -64,25 +64,25 @@ class SU(object):
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-startx':
-                    self.startx = int(sys.argv[j+1]) -1
+                    self.startx = int(sys.argv[j+1]) #-1
                     #if self.dim_input > 480 : self.dim_input = 480
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-starty':
-                    self.starty = int(sys.argv[j+1]) -1
+                    self.starty = int(sys.argv[j+1]) #-1
                     #if self.dim_input > 480 : self.dim_input = 480
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-stopx':
-                    self.endx = int(sys.argv[j+1]) -1
+                    self.endx = int(sys.argv[j+1]) #-1
                     #if self.dim_input > 480 : self.dim_input = 480
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-stopy':
-                    self.endy = int(sys.argv[j+1]) -1
+                    self.endy = int(sys.argv[j+1]) #-1
                     #if self.dim_input > 480 : self.dim_input = 480
                     
         if len(sys.argv) > 1:
