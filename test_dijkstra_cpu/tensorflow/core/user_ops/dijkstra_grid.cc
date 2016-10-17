@@ -53,12 +53,12 @@ class DijkstraGridOp : public OpKernel {
     auto grid = input_tensor.template flat<int32>();
     
     
-    Tensor * output_tensor = NULL;
+    //Tensor * output_tensor = NULL;
     OP_REQUIRES_OK(context, context->allocate_output(
                                  0, 
                                  TensorShape({size_x * size_y}), &output_tensor));
     
-    auto output = output_tensor->flat<int32>();
+    auto prev = output_tensor->flat<int32>();
     
     
     OP_REQUIRES_OK(context, context->allocate_temp(
@@ -71,10 +71,12 @@ class DijkstraGridOp : public OpKernel {
                                 TensorShape({size_x * size_y}), &dist_tensor));
     auto dist = dist_tensor.template flat<int32>();
     
+    /*
     OP_REQUIRES_OK(context, context->allocate_temp(
                                 DataTypeToEnum<int32>::value,
                                 TensorShape({size_x * size_y}), &prev_tensor));
-    auto prev = prev_tensor.template flat<int32>();
+    //auto prev = prev_tensor.template flat<int32>();
+    */
     
     const int N = grid.size();
 
@@ -174,9 +176,12 @@ class DijkstraGridOp : public OpKernel {
     //std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
     
     //print();
+    
+    /*
     for (int rank = 0; rank < N; rank++) {
-        output.data()[rank] = prev.data()[rank];
+        //output.data()[rank] = prev.data()[rank];
     }
+    */
     
   }
   
@@ -195,8 +200,9 @@ class DijkstraGridOp : public OpKernel {
     
     Tensor mask_tensor;
     Tensor dist_tensor;
-    Tensor prev_tensor;
+    //Tensor prev_tensor;
     Tensor input_tensor;
+    Tensor * output_tensor;
     
     float wall_height;
     
@@ -245,7 +251,10 @@ class DijkstraGridOp : public OpKernel {
         auto mask = mask_tensor.template flat<int32>();
         auto dist = dist_tensor.template flat<int32>();
         auto grid = input_tensor.template flat<int32>();
-        auto prev = prev_tensor.template flat<int32>();
+        //auto prev = prev_tensor.template flat<int32>();
+        auto prev = output_tensor->flat<int32>();
+        
+        
         
         float a = WALL_MULT * sqrt ( 1 + pow(grid.data()[test] - grid.data()[rank], 2) );
         int d =  dist.data()[rank] + (int) a;
@@ -281,7 +290,7 @@ class DijkstraGridOp : public OpKernel {
     
     void print() {
         auto mask = input_tensor.template flat<int32>();
-        auto prev = prev_tensor.template flat<int32>();
+        //auto prev = prev_tensor.template flat<int32>();
         for (int rank = 0; rank < mask.size(); rank++) {
             std::cout << mask.data()[rank] << ",";
             if (rank % size_x == size_x - 1) std::cout << "\n";
