@@ -2,6 +2,8 @@
 
 import sys, math
 import fileinput
+import random
+import math
 
 class SU(object):
 
@@ -18,7 +20,7 @@ class SU(object):
         self.gui = False
         self.output = False
         #self.dim_input = 0
-        #self.single_kernel = False
+        self.wall_height = 0
 
         self.startx = 3
         self.starty = 0# height - 1
@@ -58,6 +60,7 @@ class SU(object):
                         -stopy <num>
                         -width <num>
                         -height <num>
+                        -wheight <num>
                     """
                     exit();
                     
@@ -96,6 +99,10 @@ class SU(object):
                 if sys.argv[j] == '-width':
                     self.width = int(sys.argv[j+1]) 
                     
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-w-height':
+                    self.wall_height = float(sys.argv[j+1]) 
                     
         if self.gui == True:
             ## 5 is the number of buffers (maze, dist, prev, visited, mutex) ##
@@ -134,7 +141,7 @@ class SU(object):
         
         #enum for maze
         self.OPEN = 0
-        self.WALL = 1 # * 10
+        self.WALL =  100
         self.START = 0 # 2
         self.END = 0 # 3
         #self.PATH = 5
@@ -163,8 +170,9 @@ class SU(object):
         """
 
         self.dist[(self.starty * self.width) + self.startx] = 0
-
-        #self.maze[(self.starty * self.width) + self.startx] = self.START
+        
+        for i in range(self.height * self.width)  :
+            self.maze[i] = int(math.floor(random.random() * 2 + 1))
 
         # wall from file input
         if self.csv == True:
@@ -206,5 +214,5 @@ class SU(object):
     def get_starty(self): return self.starty
     def get_endx(self): return self.endx
     def get_endy(self): return self.endy
-    
+    def get_wall_height(self): return self.wall_height
         

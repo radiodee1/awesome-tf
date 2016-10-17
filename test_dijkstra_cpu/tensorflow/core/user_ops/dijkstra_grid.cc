@@ -51,7 +51,6 @@ class DijkstraGridOp : public OpKernel {
     
     input_tensor = context->input(0);
     auto grid = input_tensor.template flat<int32>();
-    // Create an output tensor
     
     
     Tensor * output_tensor = NULL;
@@ -78,31 +77,29 @@ class DijkstraGridOp : public OpKernel {
     auto prev = prev_tensor.template flat<int32>();
     
     const int N = grid.size();
-    //int i = 0;
+
     step = 0;
-    
     
     for (int rank = 0; rank < N; rank++) prev.data()[rank] = UNDEFINED;
     mask.data() [get_rank(start_x, start_y)] = VISITED;
     prev.data()[get_rank(start_x, start_y)] = -1;
-
     dist.data()[get_rank(start_x, start_y)] = 1;
 
     
     while( !found && step < size_x * size_y +1) {
         step ++;
-        std::cout << step << " = while loop i \n";
-        print();
+        //std::cout << step << " = while loop i \n";
+        //print();
         for (int rank = 0; rank < N; rank++) {
             
-            if (! found) { // rank < size_x * size_y) {
+            if (! found) { 
             
                 
-                if (  mask.data()[rank] != WALL  ) { // UNDEFINED || true ){//&& grid.data()[rank] != WALL) {
+                if (  mask.data()[rank] != WALL  ) { 
                     //right
                     if (get_y(rank) == get_y(rank + 1) && 
-                            rank + 1 < size_x * size_y && near_visited( rank) ) { //&&
-                        std::cout << "right\n";
+                            rank + 1 < size_x * size_y && near_visited( rank) ) { 
+                        //std::cout << "right\n";
                         if (! wall_found(rank+1,rank)) {
                             
                             
@@ -116,9 +113,9 @@ class DijkstraGridOp : public OpKernel {
                     
                     //left
                     if (get_y(rank) == get_y(rank - 1) && 
-                            rank - 1 >= 0 && near_visited(rank) ){//&&
+                            rank - 1 >= 0 && near_visited(rank) ){
                             
-                        std::cout << "left\n";
+                        //std::cout << "left\n";
                         if (! wall_found(rank -1, rank)) {
                             
                             
@@ -130,8 +127,8 @@ class DijkstraGridOp : public OpKernel {
                         }
                     }
                     //down
-                    if (rank + size_x < size_x * size_y && near_visited(rank) ){//&&
-                        std::cout << "down\n";
+                    if (rank + size_x < size_x * size_y && near_visited(rank) ){
+                        //std::cout << "down\n";
                         if(! wall_found(rank+ size_x, rank) ) {
                             
                             
@@ -143,8 +140,8 @@ class DijkstraGridOp : public OpKernel {
                         }
                     }
                     //up
-                    if (rank - size_x >=0 && near_visited(rank) ) { // &&
-                        std::cout << "up\n";
+                    if (rank - size_x >=0 && near_visited(rank) ) { 
+                        //std::cout << "up\n";
                         if (! wall_found(rank - size_x, rank) ) {
                         
                             
@@ -156,13 +153,13 @@ class DijkstraGridOp : public OpKernel {
                         }
                     }
                     
-                    if (near_visited(rank) ){//|| get_rank(start_x, start_y) == rank) {
+                    if (near_visited(rank) ){
                         
-                        if (true || mask.data()[rank] == UNDEFINED) mask.data()[rank] = step;//VISITED;
+                        if (true || mask.data()[rank] == UNDEFINED) mask.data()[rank] = step;
                     }
                     if ( rank == get_rank(stop_x,stop_y) && mask.data()[rank] != UNDEFINED ) {
                         found = true;
-                        std::cout << "stop here !!\n" ;
+                        //std::cout << "stop here !!\n" ;
                     }
 
                     
@@ -173,16 +170,14 @@ class DijkstraGridOp : public OpKernel {
         } // for
     } // while
 
-    //test();
-    std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
     
-    //output 
+    //std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
+    
+    print();
     for (int rank = 0; rank < N; rank++) {
         output.data()[rank] = prev.data()[rank];
     }
     
-    print();
-    std::cout << get_x(5) << " " << get_y(5) << " true="<< ( 5 == get_rank(get_x(5),get_y(5)) )  << " calibrate!!\n" ;
   }
   
   
@@ -214,27 +209,31 @@ class DijkstraGridOp : public OpKernel {
         
         if(found) return false;
         
-        if (mask.data()[rank] == WALL){// UNDEFINED ) {
+        if (mask.data()[rank] == WALL){
             return false;
         }
         //right
         if (get_y(rank) == get_y(rank + 1) && rank + 1 <= size_x * size_y ) {
-            if (mask.data()[rank + 1] != UNDEFINED && mask.data()[rank + 1] != WALL ) return true;
+            if (mask.data()[rank + 1] != UNDEFINED && 
+                mask.data()[rank + 1] != WALL ) return true;
         }
         //left
         if (get_y(rank) == get_y(rank - 1) && rank - 1 >= 0 ) {
-            if (mask.data()[rank - 1] != UNDEFINED && mask.data()[rank - 1] != WALL) return true;
+            if (mask.data()[rank - 1] != UNDEFINED && 
+                mask.data()[rank - 1] != WALL) return true;
         }
         //down
         if (rank + size_x < size_x * size_y) {
-            if (mask.data()[rank + size_x] != UNDEFINED && mask.data()[rank + size_x] != WALL ) return true;
+            if (mask.data()[rank + size_x] != UNDEFINED && 
+                mask.data()[rank + size_x] != WALL ) return true;
         }
         //up
         if (rank - size_x >=0) {
-            if (mask.data()[rank - size_x] != UNDEFINED && mask.data()[rank - size_x ] != WALL) return true;
+            if (mask.data()[rank - size_x] != UNDEFINED && 
+                mask.data()[rank - size_x ] != WALL) return true;
         }
         if (get_rank(start_x, start_y) == rank) {
-            std::cout << "start!\n";
+            //std::cout << "start!\n";
             return true; 
         }
         
@@ -257,9 +256,9 @@ class DijkstraGridOp : public OpKernel {
             if ((d < dist.data()[test] || dist.data()[test] == 0)   ){
                 if (true || get_x(rank) != start_x || get_y(rank) != start_y) {
                     
-                    if(get_rank(start_x,start_y) == rank) std::cout << "start " << rank << " " << start_x << " " << start_y <<"\n";
+                    //if(get_rank(start_x,start_y) == rank) std::cout << "start " << rank << " " << start_x << " " << start_y <<"\n";
                     prev.data()[test] = rank ;
-                    dist.data()[test] = d;//dist.data()[rank] + d;
+                    dist.data()[test] = d;
                     
                 }
                 
@@ -274,17 +273,17 @@ class DijkstraGridOp : public OpKernel {
         auto grid = input_tensor.template flat<int32>();
         float a = WALL_MULT * sqrt ( 1 + pow(grid.data()[test] - grid.data()[rank], 2) );
         if ((a > wall_height * WALL_MULT && grid.data()[rank] <= grid.data()[test] )|| mask.data()[test] == WALL  ) {
-            std::cout << test << " " << rank << " " << a << " -- wall!!\n";
+            //std::cout << test << " " << rank << " " << a << " -- wall!!\n";
             return true; 
         }
         return false;
     }
     
     void print() {
-        auto mask = mask_tensor.template flat<int32>();
+        auto mask = input_tensor.template flat<int32>();
         auto prev = prev_tensor.template flat<int32>();
         for (int rank = 0; rank < mask.size(); rank++) {
-            std::cout << mask.data()[rank] << ",";// = grid.data()[rank];
+            std::cout << mask.data()[rank] << ",";
             if (rank % size_x == size_x - 1) std::cout << "\n";
         }
         std::cout << "\n";

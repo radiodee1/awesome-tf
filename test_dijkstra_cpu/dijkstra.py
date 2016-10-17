@@ -1,11 +1,11 @@
 import sys
 import tensorflow as tf
 
-START = 2
-STOP = 3
-WALL = 1
+START = -2
+STOP = -3
+WALL = 0
 FREE = 0
-APATH = 4
+APATH = -4
 UNDEFINED = -1
 
 class Dijkstra(object):
@@ -17,7 +17,7 @@ class Dijkstra(object):
         
         self.width = 8#30
         self.height = 8#30
-
+        self.wall_height = 2
         
         self.dim = []
         self.wall = []
@@ -51,7 +51,7 @@ class Dijkstra(object):
                     stop_y = self.stopy,
                     size_x = self.width,
                     size_y = self.height,
-                    wall_height = 1.5
+                    wall_height = self.wall_height
                 ).eval()
         
         
@@ -82,7 +82,7 @@ class Dijkstra(object):
                         self.maze[(y * self.width) + x] == STOP: symbol = "X"
                     elif self.maze[(y * self.width) + x] == FREE : symbol = "0"
                     elif self.maze[(y * self.width) + x] == APATH : symbol = "*"
-                    elif self.maze[(y * self.width) + x] >= WALL : symbol = "+"
+                    elif self.maze[(y * self.width) + x] - self.maze[0]  >= 8.5 : symbol = "+"
                     
                     if self.special_printout : 
                         symbol = (str(path[(y * self.width) + x])) + ","
@@ -93,7 +93,7 @@ class Dijkstra(object):
             print
         sys.stdout.flush()
         
-        print 3 == self.get_rank(self.get_x(3), self.get_y(3)), self.get_x(3), self.get_y(3), "calibrate!!"
+        #print 3 == self.get_rank(self.get_x(3), self.get_y(3)), self.get_x(3), self.get_y(3), "calibrate!!"
         
     def follow_path(self, prev):
         ## call this after end is found!! ##
@@ -102,7 +102,7 @@ class Dijkstra(object):
         foundlist = []
     
         found = prev[((self.stopy ) * self.width) + (   self.stopx ) ]
-        print found, "stop"
+        #print found, "stop"
         
         endloop = False
         while (found != -1  ) and  i < dim and not endloop :
@@ -152,6 +152,7 @@ class Dijkstra(object):
     def set_height(self, h ): self.height = h
     
     def set_special_printout(self, s) : self.special_printout = s 
+    def set_wall_height(self, h) : self.wall_height = h
 
     def get_x(self, rank) : return rank - (self.width * int(rank / self.width))
     def get_y(self, rank) : return int(rank / self.width)

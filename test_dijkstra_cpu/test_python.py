@@ -20,6 +20,7 @@ if __name__ == '__main__':
     d.set_stopy(s.get_endy())
     d.set_width(s.get_width())
     d.set_height(s.get_height())
+    d.set_wall_height(s.get_wall_height())
     
     d.eval()
     
