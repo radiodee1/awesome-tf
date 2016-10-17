@@ -27,6 +27,7 @@ class Dijkstra(object):
         #self.output = False
         #self.dim_input = 0
         self.special_printout = False
+        self.maze_printout_wall_height = 20
 
         self.startx = 3
         self.starty = 0# height - 1
@@ -82,7 +83,8 @@ class Dijkstra(object):
                         self.maze[(y * self.width) + x] == STOP: symbol = "X"
                     elif self.maze[(y * self.width) + x] == FREE : symbol = "0"
                     elif self.maze[(y * self.width) + x] == APATH : symbol = "*"
-                    elif self.maze[(y * self.width) + x] - self.maze[0]  >= 20 : symbol = "+"
+                    elif self.maze[(y * self.width) + x] - self.maze[0]  >= \
+                        self.maze_printout_wall_height : symbol = "+"
                     
                     if self.special_printout : 
                         symbol = (str(self.maze[(y * self.width) + x])) + ","
@@ -126,6 +128,7 @@ class Dijkstra(object):
                 i += 1
             
         print foundlist, 'found', len(foundlist)
+        print "----"
         
         i = 0
         while (i < dim) :
@@ -155,6 +158,7 @@ class Dijkstra(object):
     
     def set_special_printout(self, s) : self.special_printout = s 
     def set_wall_height(self, h) : self.wall_height = h
+    def set_maze_printout_wall_height(self, h) : self.maze_printout_wall_height = h
 
     def get_x(self, rank) : return rank - (self.width * int(rank / self.width))
     def get_y(self, rank) : return int(rank / self.width)

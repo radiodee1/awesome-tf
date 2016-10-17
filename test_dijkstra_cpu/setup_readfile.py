@@ -5,6 +5,8 @@ import fileinput
 import random
 import math
 
+RANDOMIZED_FLOORS = 16
+
 class SU(object):
 
     def __init__(self) :
@@ -171,7 +173,7 @@ class SU(object):
         
         if self.randomize :
             for i in range(self.height * self.width)  :
-                self.maze[i] = int(math.floor(random.random() * 16 ))
+                self.maze[i] = int(math.floor(random.random() * RANDOMIZED_FLOORS ))
 
         # wall from file input
         if self.csv == True:
@@ -214,4 +216,5 @@ class SU(object):
     def get_endx(self): return self.endx
     def get_endy(self): return self.endy
     def get_wall_height(self): return self.wall_height
+    def get_randomized_floors(self): return RANDOMIZED_FLOORS
         
