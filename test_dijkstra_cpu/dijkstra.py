@@ -82,7 +82,7 @@ class Dijkstra(object):
                         self.maze[(y * self.width) + x] == STOP: symbol = "X"
                     elif self.maze[(y * self.width) + x] == FREE : symbol = "0"
                     elif self.maze[(y * self.width) + x] == APATH : symbol = "*"
-                    elif self.maze[(y * self.width) + x] - self.maze[0]  >= 8.5 : symbol = "+"
+                    elif self.maze[(y * self.width) + x] - self.maze[0]  >= 20 : symbol = "+"
                     
                     if self.special_printout : 
                         symbol = (str(self.maze[(y * self.width) + x])) + ","

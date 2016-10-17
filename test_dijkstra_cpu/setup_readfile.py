@@ -171,7 +171,7 @@ class SU(object):
         
         if self.randomize :
             for i in range(self.height * self.width)  :
-                self.maze[i] = int(math.floor(random.random() * 6 ))
+                self.maze[i] = int(math.floor(random.random() * 16 ))
 
         # wall from file input
         if self.csv == True:

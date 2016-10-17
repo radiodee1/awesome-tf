@@ -3,7 +3,6 @@
 #include "tensorflow/core/framework/op.h"
 
 #define WALL -1
-#define FREE 0
 #define VISITED 1
 #define UNDEFINED 0
 
