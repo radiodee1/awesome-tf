@@ -173,7 +173,7 @@ class DijkstraGridOp : public OpKernel {
     
     //std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
     
-    print();
+    //print();
     for (int rank = 0; rank < N; rank++) {
         output.data()[rank] = prev.data()[rank];
     }

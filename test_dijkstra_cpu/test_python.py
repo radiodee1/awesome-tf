@@ -24,12 +24,10 @@ if __name__ == '__main__':
     
     d.eval()
     
+    print
+    d.set_special_printout(True) #true    
     d.print_output(s.get_maze() )
-    print '----'
-    d.set_special_printout(True)
-    d.print_output(s.get_maze() ,d.get_output())
-
-        
+    
     print '----'
     d.set_special_printout(False)
     d.print_output(s.get_maze() ,d.get_output())

@@ -21,6 +21,7 @@ class SU(object):
         self.output = False
         #self.dim_input = 0
         self.wall_height = 0
+        self.randomize = False
 
         self.startx = 3
         self.starty = 0# height - 1
@@ -60,7 +61,8 @@ class SU(object):
                         -stopy <num>
                         -width <num>
                         -height <num>
-                        -wheight <num>
+                        -w-height <num>
+                        -randomize-floor
                     """
                     exit();
                     
@@ -103,6 +105,11 @@ class SU(object):
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-w-height':
                     self.wall_height = float(sys.argv[j+1]) 
+                    
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-randomize-floor':
+                    self.randomize = True
                     
         if self.gui == True:
             ## 5 is the number of buffers (maze, dist, prev, visited, mutex) ##
@@ -159,20 +166,12 @@ class SU(object):
         self.prev = [self.UNDEFINED] * (self.width * self.height)
         self.visited = [0] * (self.width * self.height)
 
-        """
-        for y in range (0 , self.height):
-            for x in range (0, self.width):
-                self.maze[ (y * self.width) + x] = self.FREE
-                if self.startx == x and self.starty == y :
-                    self.maze[ (y * self.width) + x] = self.START
-                if self.endx == x and self.endy == y :
-                    self.maze[ (y * self.width) + x] = self.END
-        """
 
         self.dist[(self.starty * self.width) + self.startx] = 0
         
-        for i in range(self.height * self.width)  :
-            self.maze[i] = int(math.floor(random.random() * 2 + 1))
+        if self.randomize :
+            for i in range(self.height * self.width)  :
+                self.maze[i] = int(math.floor(random.random() * 6 ))
 
         # wall from file input
         if self.csv == True:

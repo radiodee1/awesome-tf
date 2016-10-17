@@ -85,8 +85,10 @@ class Dijkstra(object):
                     elif self.maze[(y * self.width) + x] - self.maze[0]  >= 8.5 : symbol = "+"
                     
                     if self.special_printout : 
-                        symbol = (str(path[(y * self.width) + x])) + ","
-                        if len(symbol) == 2 : symbol = " " + symbol
+                        symbol = (str(self.maze[(y * self.width) + x])) + ","
+                        if len(symbol) == 3 : symbol = " " + symbol
+                        if len(symbol) == 2 : symbol = "  " + symbol
+                        if len(symbol) == 1 : symbol = "   " + symbol
                     
                     sys.stdout.write (symbol) #(str(output[(y * self.width) + x]))
             
