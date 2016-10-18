@@ -24,6 +24,7 @@ class SU(object):
         #self.dim_input = 0
         self.wall_height = 0
         self.randomize = False
+        self.mapname = "map.png"
 
         self.startx = 3
         self.starty = 0# height - 1
@@ -65,6 +66,7 @@ class SU(object):
                         -height <num>
                         -w-height <num>
                         -randomize-floor
+                        -mapname <filename>
                     """
                     exit();
                     
@@ -113,15 +115,19 @@ class SU(object):
                 if sys.argv[j] == '-randomize-floor':
                     self.randomize = True
                     
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-mapname':
+                    self.mapname = str(sys.argv[j+1]) 
+                    self.gui = True
+                    
+        
         if self.gui == True:
-            ## 5 is the number of buffers (maze, dist, prev, visited, mutex) ##
-            #dimension = int(math.sqrt(cl.device_info.MAX_WORK_GROUP_SIZE / 5))
-            ## if double kernel is used, 'dimension' is less important!! ##
-            self.dimension = 60
-            if self.dim_input != 0 : self.dimension = self.dim_input
-            self.width = self.dimension
-            self.height = self.dimension
-
+            dim = 100
+            if self.width == -1 : self.width = dim#int(dim[0])
+            if self.height == -1 : self.height = dim#int(dim[1])
+        
+        
         i = 0
         k = 0
         if len(sys.argv) > 1 : 
@@ -169,7 +175,7 @@ class SU(object):
         self.visited = [0] * (self.width * self.height)
 
 
-        self.dist[(self.starty * self.width) + self.startx] = 0
+        #self.dist[(self.starty * self.width) + self.startx] = 0
         
         if self.randomize :
             for i in range(self.height * self.width)  :
@@ -185,7 +191,7 @@ class SU(object):
                         self.maze[int(i)] = self.WALL
 
         # non-random walls
-        if self.csv == False:
+        if self.csv == False and self.gui == False:
             onethird = int(self.height / 3)
             twothirds = int(self.height * 2 / 3 )
             for i in range (0, 6) : #(0,7)
@@ -217,4 +223,7 @@ class SU(object):
     def get_endy(self): return self.endy
     def get_wall_height(self): return self.wall_height
     def get_randomized_floors(self): return RANDOMIZED_FLOORS
+    
+    def get_mapname(self): return self.mapname
+    def get_is_gui(self): return self.gui
         

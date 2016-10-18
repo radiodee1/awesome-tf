@@ -1,0 +1,390 @@
+
+import numpy
+import time, math
+#import fileinput
+import pygame as pg
+import pygame.gfxdraw as pgd
+import pygame
+import sys
+
+
+
+class Interface(object) :
+
+	def __init__(self, array):
+		self.mz = array
+		self.mapname = 'map.png'
+		self.iconname = 'icon.png'
+		self.map  = []
+		self.quit = 0	
+		
+	def solve_png(self , tfuser, cpu):
+	
+		#if self.mz.gui == False:
+		#	cpu.set_map(self.mz.maze, self.mz.width, self.mz.height)
+		#	return
+	
+		x = 0
+		y = 0
+		white = (64, 64, 64)
+		w = 480
+		h = 480
+		self.startx = -1
+		self.starty = -1
+		self.endx = -1
+		self.endy = -1
+		
+		self.guiwidth = cpu.width
+		self.guiheight = cpu.height
+		
+		surface = pg.image.load(self.mapname)
+		icon = pg.image.load(self.iconname)
+
+		pg.display.set_icon(icon)
+		
+		## initialize control components ##
+		gray = (16,16,16)
+		red =(255,0,0)
+		green = (0,255,0)
+		blue = (0,0,255)
+		self.boxborder = 5
+		self.boxwidth = 48
+		self.boxheight = 16
+		self.box = pg.Surface((self.boxwidth + (self.boxborder * 2), 
+			self.boxheight + (self.boxborder * 2)))
+		self.box.fill(gray)
+		boxred = pg.Surface((16,16))
+		boxred.fill(red)
+		boxgreen = pg.Surface((16,16))
+		boxgreen.fill(green)
+		boxblue = pg.Surface((16,16))
+		boxblue.fill(blue)
+		self.box.blit(boxgreen, (0 + self.boxborder,0 + self.boxborder))
+		self.box.blit(boxred, (16 + self.boxborder,0 + self.boxborder))
+		self.box.blit(boxblue, (32 + self.boxborder, 0 + self.boxborder))
+		self.mousex = 0
+		self.mousey = 0
+		self.boundtop = h - (self.box.get_height() - self.boxborder)
+		self.boundbottom = h - self.boxborder
+		self.boundgreenleft = w - (self.box.get_width() -  self.boxborder)
+		self.boundgreenright = w - (self.box.get_width() -  self.boxborder) + 16
+		self.boundredleft = w - (self.box.get_width() -  self.boxborder) + 16
+		self.boundredright = w - (self.box.get_width() -  self.boxborder) + 32
+		self.boundblueleft = w - (self.box.get_width() -  self.boxborder) + 32
+		self.boundblueright = w - (self.box.get_width() -  self.boxborder) + 48
+		blocksize = (w /cpu.width) -2
+		if blocksize <= 2 : blocksize = 4
+		self.startblock = pg.Surface((blocksize,blocksize))
+		self.startblock.fill(green)
+		self.endblock = pg.Surface((blocksize,blocksize))
+		self.endblock.fill(red)
+		self.pathblock = pg.Surface((blocksize,blocksize))
+		self.pathblock.fill(blue)
+		self.blockoffset = 0#blocksize / 2 
+		
+		## fixscale not used ##
+		self.fixscale = ( float  ( w - (int ( w/ cpu.width  ) * cpu.width ))/w ) + 1
+		
+		## all walls ##
+		self.wallbox = pg.Surface( (math.ceil((w/cpu.width)* self.fixscale), 
+			math.ceil((h/cpu.height) * self.fixscale )))
+		self.wallbox.fill((0,0,0))
+		
+		
+		## display first screen ##
+		screensurf = surface
+		screen = pg.display.set_mode((w, h))
+		pg.display.set_caption('dijkstra-cpu', 'dijkstra-cpu')
+		screen.fill((white))
+		
+		self.quit = 0
+		running = 1
+		while running:
+
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					running = 0
+					self.quit = 1	
+				if event.type == pg.KEYUP:
+					if event.key == pg.K_RETURN:
+						running = 0
+					if event.key == pg.K_UP:
+						y -= 5
+						if y < 0 : 
+							y = 0
+					if event.key == pg.K_DOWN:
+						y += 5
+						if y + cpu.height > screen.get_height() : 
+							y = screen.get_height() - cpu.height 
+							
+					if event.key == pg.K_LEFT:
+						x -= 5
+						if x < 0 : 
+							x = 0
+					if event.key == pg.K_RIGHT:
+						x += 5
+						if x + cpu.width > screen.get_width() : 
+							x = screen.get_width() - cpu.width 			
+			
+			screensurf = surface.copy()
+			screen.fill(white)
+			screen.blit(screensurf,(0,0))
+			pgd.rectangle(screen, ((x,y),(cpu.width,cpu.height)), (255,0,0))
+			pg.display.flip()
+			
+		## display second screen ##
+		screen.fill((white))
+		self.smallsurf = pg.Surface((cpu.width, cpu.height))
+		bwsurf = pg.Surface((cpu.width, cpu.height))
+		self.smallsurf.blit(surface,(0,0),((x,y), (cpu.width, cpu.height)))
+		
+		
+		pg.transform.threshold(bwsurf, self.smallsurf,
+			(0,0,0,0),(20,20,20,0), (255,255,255,0), 1)	
+		
+		screensurf = pg.Surface((w,h))
+		screensurf.fill((255,255,255))
+		screen.fill((255,255,255))
+		
+		## convert to array representation ##
+		self.sa = [0] * cpu.width * cpu.height
+		pxarray = pygame.PixelArray(self.smallsurf)
+		for yy in range (0, cpu.width):
+			for xx in range (0, cpu.height):
+				p =  pxarray[xx,yy]
+
+				if p == 0 : p = self.mz.WALL
+				else : p = 0
+				self.sa[(yy * cpu.width) + xx] = p
+				if p == self.mz.WALL:
+					self.mz.wallout.append((yy * cpu.width) + xx)
+					
+					## print walls to screen ! ##
+					xxx = float(xx * ( self.fixscale)) 
+					yyy = float(yy * ( self.fixscale)) 
+					screensurf.blit(self.wallbox, 
+						(float(xxx * float (w  / cpu.width))   ,
+						float(yyy * float (h  / cpu.height))   ))
+		
+		self.gui_state = 0
+		
+		self.PLACE_START = 1
+		self.PLACE_END = 2
+		self.FIND_PATH = 3
+		self.HOLD_START = 4
+		self.HOLD_END = 5
+		
+		self.running = 1
+		while self.running == 1 and self.quit == 0:
+			
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					self.running = 0
+					self.quit = 1	
+			
+			screen.fill((white))
+			screen.blit(screensurf,(0,0))
+			self.gui_controls(screen, event, w,h)
+			pg.display.flip()
+		
+	
+		
+		self.mz.endx = self.endx
+		self.mz.endy = self.endy
+		
+		self.mz.startx = self.startx
+		self.mz.starty = self.starty
+		
+		if self.quit != 1:
+			## run cpu calculation ## tfuser !!
+			tfuser.set_maze(self.sa)
+			tfuser.set_startx(self.startx)
+			tfuser.set_starty(self.starty)
+			tfuser.set_stopx(self.endx)
+			tfuser.set_stopy(self.endy)
+			tfuser.set_width(s.get_width())
+			tfuser.set_height(s.get_height())
+			tfuser.set_wall_height(s.get_wall_height())
+			#d.set_maze_printout_wall_height(s.get_randomized_floors() + 2)
+			
+			starttime = time.clock()
+			tfuser.eval()
+			
+			"""
+			self.sa[(self.starty * cpu.width) + self.startx] = self.mz.START
+			self.sa[(self.endy * cpu.width) + self.endx] = self.mz.END
+			
+			cpu.set_dist_start(self.startx, self.starty)
+			
+			cpu.set_map(self.sa, cpu.width, cpu.height)
+			starttime = time.clock()
+			
+			cpu.execute()
+			"""
+			endtime = time.clock()
+			print  endtime - starttime , 'time on cpu'
+			tfuser.follow_path(tfuser.get_output())
+		
+		## print screen with solution ##
+		self.running = 1
+		while self.running == 1 and self.quit == 0:
+			
+			for event in pg.event.get():
+				if event.type == pg.QUIT:
+					self.running = 0
+					self.quit = 1	
+			
+				if event.type == pg.KEYUP:
+					if event.key == pg.K_RETURN:
+						self.running = 0
+			
+				if event.type == pg.MOUSEBUTTONDOWN:
+			
+					left , middle, right = pg.mouse.get_pressed() 
+					if left == True:
+						self.running = 0
+			
+			screen.fill((white))
+			screen.blit(screensurf,(0,0))
+			for i in cpu.found :
+				xx = i - ( cpu.get_width() * (int(i / cpu.get_width() )))
+				yy = int(i / cpu.get_width())
+			
+				xxx = float(xx * ( self.fixscale)) 
+				yyy = float(yy * ( self.fixscale)) 
+				
+				screen.blit(self.pathblock,
+					(float(xxx * float(screen.get_width() / cpu.width)) + self.blockoffset,
+					float(yyy * float(screen.get_width() / cpu.width)) + self.blockoffset))
+				screen.blit(self.startblock,
+					(self.startx * (screen.get_width() / cpu.width) * self.fixscale, 
+					self.starty * (screen.get_width() / cpu.width) * self.fixscale))
+				screen.blit(self.endblock,
+					(self.endx * (screen.get_width() / cpu.width) * self.fixscale,
+					self.endy * (screen.get_width() / cpu.width) * self.fixscale))
+			pg.display.flip()
+
+	def gui_controls(self, screen, event,w,h):
+		# this helper function puts controls on the screen
+		screen.blit(self.box ,( w- (self.box.get_width()), 
+			h - (self.box.get_height())) )
+		# detect mouse
+		self.mousex , self.mousey = pg.mouse.get_pos()
+		self.mousex = self.mousex - (self.wallbox.get_width() / 2)
+		self.mousey = self.mousey - (self.wallbox.get_height() / 2)
+		if event.type == pg.MOUSEBUTTONDOWN:
+			#print 'here mouse'
+			left , middle, right = pg.mouse.get_pressed() 
+			if left == True:
+				
+				if self.mousey > self.boundtop \
+						and self.mousey < self.boundbottom :
+					if self.mousex > self.boundredleft and self.mousex < self.boundredright:
+						self.gui_state = self.HOLD_END
+						self.endx = -1
+						self.endy = -1
+					if self.mousex > self.boundgreenleft and self.mousex < self.boundgreenright:
+						self.gui_state = self.HOLD_START
+						self.startx = -1
+						self.starty = -1
+					if self.mousex > self.boundblueleft and self.mousex < self.boundblueright:
+						self.running = 0
+						self.gui_state = self.FIND_PATH
+
+				elif self.gui_state == self.PLACE_START:
+					if self.mousex < self.wallbox.get_width() * self.mz.width and \
+							self.mousey < self.wallbox.get_height() * self.mz.height :
+						self.startx = self.mousex / (screen.get_width() / self.smallsurf.get_width())
+						self.starty = self.mousey / (screen.get_height()/ self.smallsurf.get_height())
+						#self.gui_state = 0
+						self.startx, self.starty = self.dot_not_on_wall(self.startx, self.starty)
+					
+				elif self.gui_state == self.PLACE_END:
+					if self.mousex < self.wallbox.get_width() * self.mz.width and \
+							self.mousey < self.wallbox.get_height() * self.mz.height :
+						self.endx = self.mousex / (screen.get_width() / self.smallsurf.get_width())
+						self.endy = self.mousey / (screen.get_height()/ self.smallsurf.get_height())
+						#self.gui_state = 0
+						self.endx, self.endy = self.dot_not_on_wall(self.endx, self.endy)
+						
+				elif self.gui_state == self.HOLD_START:
+					self.gui_state = self.PLACE_START
+				elif self.gui_state == self.HOLD_END:
+					self.gui_state = self.PLACE_END
+		
+		
+		
+		if self.gui_state == self.HOLD_START:
+			screen.blit(self.startblock,(self.mousex , self.mousey ))
+					
+		if self.gui_state == self.HOLD_END:
+			screen.blit(self.endblock,(self.mousex, self.mousey))
+					
+		if (self.startx != -1 and self.starty != -1) :
+		
+			screen.blit(self.startblock,
+				(self.startx * (screen.get_width() / self.smallsurf.get_width()) * self.fixscale, 
+				self.starty * (screen.get_width() / self.smallsurf.get_width()) * self.fixscale))
+		
+		if (self.endx != -1 and self.endy != -1) :
+			
+			screen.blit(self.endblock,
+				(self.endx * (screen.get_width() / self.smallsurf.get_width()) * self.fixscale,
+				self.endy * (screen.get_width() / self.smallsurf.get_width()) * self.fixscale))
+		
+	def dot_not_on_wall(self, x, y) :
+		xx = -1
+		yy = -1
+		x = int(x / self.fixscale)
+		y = int(y / self.fixscale)
+		if self.sa[(y * self.guiwidth) + x ] != self.mz.WALL : 
+			xx = x
+			yy = y  
+			self.gui_state = 0
+		return (xx,yy)
+
+	def show_maze(self, maze = [], width = 10, height = 10, symbols=True):
+		
+		if len(maze) != height * width:
+			#
+			print 'bad height * width'
+		
+		
+		if True:	
+			print
+			for x in range (0,width + 2):
+				if x < width + 1:
+					print '#',
+				else:
+					print '#'
+
+			for y in range (0 , height):
+				print '#',
+				for x in range (0, width):
+					if symbols == True:
+						if maze[ (y * width) + x] == self.mz.FREE :
+							print ' ',
+						elif maze[ (y * width) + x] == self.mz.START :
+							print 'S',
+						elif maze[ (y * width) + x] == self.mz.END :
+							print 'X',
+						elif maze[ (y * width) + x] == self.mz.WALL :
+							print '#',
+						elif maze[ (y * width) + x] == self.mz.PATH :
+							print 'O',
+						elif maze[ (y * width) + x] == self.mz.UNDEFINED :
+							print 'U',
+					else:
+						print maze[ (y * width) + x] ,
+				
+				print '#',
+				print
+
+			for x in range (0,width + 2):
+				print '#',
+			print
+			print
+	
+	def set_mapname(self, m) : self.mapname = m
+	
+
