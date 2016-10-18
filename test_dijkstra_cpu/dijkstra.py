@@ -21,7 +21,7 @@ class Dijkstra(object):
         
         self.dim = []
         self.wall = []
-        self.wallout = []
+        self.found = []
         #self.csv = False
         #self.gui = False
         #self.output = False
@@ -106,12 +106,15 @@ class Dijkstra(object):
         foundlist = []
     
         found = prev[((self.stopy ) * self.width) + (   self.stopx ) ]
-        #print found, "stop"
+        #print found, "stop", len(prev), prev
+        
+        #for i in self.output: 
+        #	if int(i) is not int(0) : print i
         
         endloop = False
         while (found != -1  ) and  i < dim and not endloop :
             
-            #if found in foundlist: endloop = True
+            if found in foundlist: endloop = True
             
             if (self.get_x(found) == self.startx and self.get_y(found) == self.starty) : 
                 endloop = True 
@@ -127,7 +130,8 @@ class Dijkstra(object):
                 if (found != -1) : found = prev[found]
                 i += 1
             
-        print foundlist, 'found', len(foundlist)
+        self.found = foundlist
+        #print foundlist, 'found', len(foundlist)
         print "----"
         
         i = 0

@@ -11,12 +11,13 @@ import sys
 
 class Interface(object) :
 
-	def __init__(self, array):
-		self.mz = array
+	def __init__(self, readfile):
+		self.mz = readfile
 		self.mapname = 'map.png'
 		self.iconname = 'icon.png'
 		self.map  = []
 		self.quit = 0	
+		self.maze = []
 		
 	def solve_png(self , tfuser, cpu):
 	
@@ -148,6 +149,7 @@ class Interface(object) :
 		
 		## convert to array representation ##
 		self.sa = [0] * cpu.width * cpu.height
+		self.maze = [0] * cpu.width * cpu.height
 		pxarray = pygame.PixelArray(self.smallsurf)
 		for yy in range (0, cpu.width):
 			for xx in range (0, cpu.height):
@@ -156,8 +158,14 @@ class Interface(object) :
 				if p == 0 : p = self.mz.WALL
 				else : p = 0
 				self.sa[(yy * cpu.width) + xx] = p
+				
+				g = 0
+				if p != 0 : g = self.mz.WALL
+				else : g = 0
+				self.maze[(yy * cpu.width) + xx] = g
+				
 				if p == self.mz.WALL:
-					self.mz.wallout.append((yy * cpu.width) + xx)
+					#self.mz.wallout.append((yy * cpu.width) + xx)
 					
 					## print walls to screen ! ##
 					xxx = float(xx * ( self.fixscale)) 
@@ -197,14 +205,15 @@ class Interface(object) :
 		
 		if self.quit != 1:
 			## run cpu calculation ## tfuser !!
-			tfuser.set_maze(self.sa)
+			print self.startx, self.starty, self.endx, self.endy , cpu.width, cpu.height, "check me!!"
+			tfuser.set_maze(self.maze)
 			tfuser.set_startx(self.startx)
 			tfuser.set_starty(self.starty)
 			tfuser.set_stopx(self.endx)
 			tfuser.set_stopy(self.endy)
-			tfuser.set_width(s.get_width())
-			tfuser.set_height(s.get_height())
-			tfuser.set_wall_height(s.get_wall_height())
+			tfuser.set_width(cpu.width)
+			tfuser.set_height(cpu.height)
+			tfuser.set_wall_height(cpu.get_wall_height())
 			#d.set_maze_printout_wall_height(s.get_randomized_floors() + 2)
 			
 			starttime = time.clock()
@@ -223,7 +232,7 @@ class Interface(object) :
 			"""
 			endtime = time.clock()
 			print  endtime - starttime , 'time on cpu'
-			tfuser.follow_path(tfuser.get_output())
+			tfuser.follow_path(tfuser.output)
 		
 		## print screen with solution ##
 		self.running = 1
@@ -246,7 +255,7 @@ class Interface(object) :
 			
 			screen.fill((white))
 			screen.blit(screensurf,(0,0))
-			for i in cpu.found :
+			for i in tfuser.found :
 				xx = i - ( cpu.get_width() * (int(i / cpu.get_width() )))
 				yy = int(i / cpu.get_width())
 			

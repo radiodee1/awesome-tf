@@ -22,7 +22,7 @@ class SU(object):
         self.gui = False
         self.output = False
         #self.dim_input = 0
-        self.wall_height = 0
+        self.wall_height = 10
         self.randomize = False
         self.mapname = "map.png"
 
