@@ -2,4 +2,6 @@
 
 #./test_op.py -mapname map.png -width 80 -height 80 -startx 65 -starty 74 -stopx 35 -stopy 9 
 
-./test_op.py -mapname map.png -width 80 -height 80
+#./test_op.py -mapname map.png -width 80 -height 80
+
+./test_op.py -mapname img/maze.png -width 480 -height 480
