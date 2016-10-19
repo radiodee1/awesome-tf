@@ -22,10 +22,7 @@ class Dijkstra(object):
         self.dim = []
         self.wall = []
         self.found = []
-        #self.csv = False
-        #self.gui = False
-        #self.output = False
-        #self.dim_input = 0
+        
         self.special_printout = False
         self.maze_printout_wall_height = 20
 
@@ -41,7 +38,7 @@ class Dijkstra(object):
         self.visited = []
         
     def eval(self):
-        print  self.maze
+        #print  self.maze
         
         with tf.Session(''):
             self.output = self.dijkstra_grid_module.dijkstra_grid(

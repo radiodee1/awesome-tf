@@ -19,12 +19,14 @@ class Interface(object) :
 		self.quit = 0	
 		self.maze = []
 		
-	def solve_png(self , tfuser, cpu):
+		self.block_screen_1 = True ## select smaller map
+		self.block_screen_2 = True ## select start and stop
+		#self.block_screen_3 = True ## print results
+		
+		
+	def solve_png(self , tfuser, readfile):
 	
-		#if self.mz.gui == False:
-		#	cpu.set_map(self.mz.maze, self.mz.width, self.mz.height)
-		#	return
-	
+		
 		x = 0
 		y = 0
 		white = (64, 64, 64)
@@ -35,8 +37,17 @@ class Interface(object) :
 		self.endx = -1
 		self.endy = -1
 		
-		self.guiwidth = cpu.width
-		self.guiheight = cpu.height
+		if readfile.all_coordinates == True :
+				
+			self.block_screen_1 = False ## select smaller map
+			self.block_screen_2 = False ## select start and stop
+			self.startx = readfile.startx
+			self.starty = readfile.starty
+			self.endx = readfile.endx
+			self.endy = readfile.endy
+		
+		self.guiwidth = readfile.width
+		self.guiheight = readfile.height
 		
 		surface = pg.image.load(self.mapname)
 		icon = pg.image.load(self.iconname)
@@ -73,7 +84,7 @@ class Interface(object) :
 		self.boundredright = w - (self.box.get_width() -  self.boxborder) + 32
 		self.boundblueleft = w - (self.box.get_width() -  self.boxborder) + 32
 		self.boundblueright = w - (self.box.get_width() -  self.boxborder) + 48
-		blocksize = (w /cpu.width) -2
+		blocksize = (w /readfile.width) -2
 		if blocksize <= 2 : blocksize = 4
 		self.startblock = pg.Surface((blocksize,blocksize))
 		self.startblock.fill(green)
@@ -84,11 +95,11 @@ class Interface(object) :
 		self.blockoffset = 0#blocksize / 2 
 		
 		## fixscale not used ##
-		self.fixscale = ( float  ( w - (int ( w/ cpu.width  ) * cpu.width ))/w ) + 1
+		self.fixscale = ( float  ( w - (int ( w/ readfile.width  ) * readfile.width ))/w ) + 1
 		
 		## all walls ##
-		self.wallbox = pg.Surface( (math.ceil((w/cpu.width)* self.fixscale), 
-			math.ceil((h/cpu.height) * self.fixscale )))
+		self.wallbox = pg.Surface( (math.ceil((w/readfile.width)* self.fixscale), 
+			math.ceil((h/readfile.height) * self.fixscale )))
 		self.wallbox.fill((0,0,0))
 		
 		
@@ -98,46 +109,48 @@ class Interface(object) :
 		pg.display.set_caption('dijkstra-cpu', 'dijkstra-cpu')
 		screen.fill((white))
 		
-		self.quit = 0
-		running = 1
-		while running:
+		## skip if all coordinates are specified at command line ##
+		if self.block_screen_1 == True:
+			self.quit = 0
+			running = 1
+			while running:
 
-			for event in pg.event.get():
-				if event.type == pg.QUIT:
-					running = 0
-					self.quit = 1	
-				if event.type == pg.KEYUP:
-					if event.key == pg.K_RETURN:
+				for event in pg.event.get():
+					if event.type == pg.QUIT:
 						running = 0
-					if event.key == pg.K_UP:
-						y -= 5
-						if y < 0 : 
-							y = 0
-					if event.key == pg.K_DOWN:
-						y += 5
-						if y + cpu.height > screen.get_height() : 
-							y = screen.get_height() - cpu.height 
+						self.quit = 1	
+					if event.type == pg.KEYUP:
+						if event.key == pg.K_RETURN:
+							running = 0
+						if event.key == pg.K_UP:
+							y -= 5
+							if y < 0 : 
+								y = 0
+						if event.key == pg.K_DOWN:
+							y += 5
+							if y + readfile.height > screen.get_height() : 
+								y = screen.get_height() - readfile.height 
 							
-					if event.key == pg.K_LEFT:
-						x -= 5
-						if x < 0 : 
-							x = 0
-					if event.key == pg.K_RIGHT:
-						x += 5
-						if x + cpu.width > screen.get_width() : 
-							x = screen.get_width() - cpu.width 			
+						if event.key == pg.K_LEFT:
+							x -= 5
+							if x < 0 : 
+								x = 0
+						if event.key == pg.K_RIGHT:
+							x += 5
+							if x + readfile.width > screen.get_width() : 
+								x = screen.get_width() - readfile.width 			
 			
-			screensurf = surface.copy()
-			screen.fill(white)
-			screen.blit(screensurf,(0,0))
-			pgd.rectangle(screen, ((x,y),(cpu.width,cpu.height)), (255,0,0))
-			pg.display.flip()
+				screensurf = surface.copy()
+				screen.fill(white)
+				screen.blit(screensurf,(0,0))
+				pgd.rectangle(screen, ((x,y),(readfile.width,readfile.height)), (255,0,0))
+				pg.display.flip()
 			
 		## display second screen ##
 		screen.fill((white))
-		self.smallsurf = pg.Surface((cpu.width, cpu.height))
-		bwsurf = pg.Surface((cpu.width, cpu.height))
-		self.smallsurf.blit(surface,(0,0),((x,y), (cpu.width, cpu.height)))
+		self.smallsurf = pg.Surface((readfile.width, readfile.height))
+		bwsurf = pg.Surface((readfile.width, readfile.height))
+		self.smallsurf.blit(surface,(0,0),((x,y), (readfile.width, readfile.height)))
 		
 		
 		pg.transform.threshold(bwsurf, self.smallsurf,
@@ -148,31 +161,31 @@ class Interface(object) :
 		screen.fill((255,255,255))
 		
 		## convert to array representation ##
-		self.sa = [0] * cpu.width * cpu.height
-		self.maze = [0] * cpu.width * cpu.height
+		self.sa = [0] * readfile.width * readfile.height
+		self.maze = [0] * readfile.width * readfile.height
 		pxarray = pygame.PixelArray(self.smallsurf)
-		for yy in range (0, cpu.width):
-			for xx in range (0, cpu.height):
+		for yy in range (0, readfile.width):
+			for xx in range (0, readfile.height):
 				p =  pxarray[xx,yy]
 
 				if p == 0 : p = self.mz.WALL
 				else : p = 0
-				self.sa[(yy * cpu.width) + xx] = p
+				self.sa[(yy * readfile.width) + xx] = p
 				
 				g = 0
 				if p != 0 : g = self.mz.WALL
 				else : g = 0
-				self.maze[(yy * cpu.width) + xx] = g
+				self.maze[(yy * readfile.width) + xx] = g
 				
 				if p == self.mz.WALL:
-					#self.mz.wallout.append((yy * cpu.width) + xx)
+					#self.mz.wallout.append((yy * readfile.width) + xx)
 					
 					## print walls to screen ! ##
 					xxx = float(xx * ( self.fixscale)) 
 					yyy = float(yy * ( self.fixscale)) 
 					screensurf.blit(self.wallbox, 
-						(float(xxx * float (w  / cpu.width))   ,
-						float(yyy * float (h  / cpu.height))   ))
+						(float(xxx * float (w  / readfile.width))   ,
+						float(yyy * float (h  / readfile.height))   ))
 		
 		self.gui_state = 0
 		
@@ -182,18 +195,25 @@ class Interface(object) :
 		self.HOLD_START = 4
 		self.HOLD_END = 5
 		
-		self.running = 1
-		while self.running == 1 and self.quit == 0:
+		## skip if all coordinates are specified at command line ##
+		if self.block_screen_2 == True :
+			self.running = 1
+			while self.running == 1 and self.quit == 0:
 			
-			for event in pg.event.get():
-				if event.type == pg.QUIT:
-					self.running = 0
-					self.quit = 1	
+				for event in pg.event.get():
+					if event.type == pg.QUIT:
+						self.running = 0
+						self.quit = 1	
 			
-			screen.fill((white))
-			screen.blit(screensurf,(0,0))
-			self.gui_controls(screen, event, w,h)
-			pg.display.flip()
+				screen.fill((white))
+				screen.blit(screensurf,(0,0))
+				self.gui_controls(screen, event, w,h)
+				pg.display.flip()
+			
+			print "-startx", self.startx
+			print "-starty", self.starty
+			print "-stopx", self.endx
+			print "-stopy", self.endy
 		
 	
 		
@@ -205,31 +225,20 @@ class Interface(object) :
 		
 		if self.quit != 1:
 			## run cpu calculation ## tfuser !!
-			print self.startx, self.starty, self.endx, self.endy , cpu.width, cpu.height, "check me!!"
 			tfuser.set_maze(self.maze)
 			tfuser.set_startx(self.startx)
 			tfuser.set_starty(self.starty)
 			tfuser.set_stopx(self.endx)
 			tfuser.set_stopy(self.endy)
-			tfuser.set_width(cpu.width)
-			tfuser.set_height(cpu.height)
-			tfuser.set_wall_height(cpu.get_wall_height())
+			tfuser.set_width(readfile.width)
+			tfuser.set_height(readfile.height)
+			tfuser.set_wall_height(readfile.get_wall_height())
 			#d.set_maze_printout_wall_height(s.get_randomized_floors() + 2)
 			
 			starttime = time.clock()
 			tfuser.eval()
 			
-			"""
-			self.sa[(self.starty * cpu.width) + self.startx] = self.mz.START
-			self.sa[(self.endy * cpu.width) + self.endx] = self.mz.END
 			
-			cpu.set_dist_start(self.startx, self.starty)
-			
-			cpu.set_map(self.sa, cpu.width, cpu.height)
-			starttime = time.clock()
-			
-			cpu.execute()
-			"""
 			endtime = time.clock()
 			print  endtime - starttime , 'time on cpu'
 			tfuser.follow_path(tfuser.output)
@@ -256,21 +265,21 @@ class Interface(object) :
 			screen.fill((white))
 			screen.blit(screensurf,(0,0))
 			for i in tfuser.found :
-				xx = i - ( cpu.get_width() * (int(i / cpu.get_width() )))
-				yy = int(i / cpu.get_width())
+				xx = i - ( readfile.get_width() * (int(i / readfile.get_width() )))
+				yy = int(i / readfile.get_width())
 			
 				xxx = float(xx * ( self.fixscale)) 
 				yyy = float(yy * ( self.fixscale)) 
 				
 				screen.blit(self.pathblock,
-					(float(xxx * float(screen.get_width() / cpu.width)) + self.blockoffset,
-					float(yyy * float(screen.get_width() / cpu.width)) + self.blockoffset))
+					(float(xxx * float(screen.get_width() / readfile.width)) + self.blockoffset,
+					float(yyy * float(screen.get_width() / readfile.width)) + self.blockoffset))
 				screen.blit(self.startblock,
-					(self.startx * (screen.get_width() / cpu.width) * self.fixscale, 
-					self.starty * (screen.get_width() / cpu.width) * self.fixscale))
+					(self.startx * (screen.get_width() / readfile.width) * self.fixscale, 
+					self.starty * (screen.get_width() / readfile.width) * self.fixscale))
 				screen.blit(self.endblock,
-					(self.endx * (screen.get_width() / cpu.width) * self.fixscale,
-					self.endy * (screen.get_width() / cpu.width) * self.fixscale))
+					(self.endx * (screen.get_width() / readfile.width) * self.fixscale,
+					self.endy * (screen.get_width() / readfile.width) * self.fixscale))
 			pg.display.flip()
 
 	def gui_controls(self, screen, event,w,h):

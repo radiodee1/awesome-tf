@@ -26,11 +26,12 @@ class SU(object):
         self.randomize = False
         self.mapname = "map.png"
 
-        self.startx = 3
-        self.starty = 0# height - 1
-        self.endx = self.width - 3
-        self.endy =  self.height - 1
+        self.startx = -1 #3
+        self.starty = -1 #0
+        self.endx = -1 #self.width - 3
+        self.endy = -1 #self.height - 1
 
+        self.all_coordinates = False
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
@@ -124,9 +125,16 @@ class SU(object):
         
         if self.gui == True:
             dim = 100
-            if self.width == -1 : self.width = dim#int(dim[0])
-            if self.height == -1 : self.height = dim#int(dim[1])
+            if self.width == -1 : self.width = dim
+            if self.height == -1 : self.height = dim
+            if self.startx != -1 and self.starty != -1 and \
+                    self.endx != -1 and self.endy != -1 :
+                self.all_coordinates = True
         
+        if self.startx == -1 : self.startx = 0
+        if self.starty == -1 : self.starty = 0
+        if self.endx == -1 : self.endx = 0
+        if self.endy == -1 : self.endy = 0
         
         i = 0
         k = 0
