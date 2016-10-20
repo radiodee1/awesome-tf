@@ -1,6 +1,7 @@
 #include <cmath>
 
 #include "tensorflow/core/framework/op.h"
+#include "dijkstra_grid_gpu.h"
 
 #define WALL -1
 #define VISITED 1
@@ -8,7 +9,7 @@
 
 #define WALL_MULT 100
 
-REGISTER_OP("DijkstraGrid")
+REGISTER_OP("DijkstraGridGpu")
     .Input("grid: int32")
     .Attr("start_x: int = 0")
     .Attr("start_y: int = 0")
@@ -21,12 +22,14 @@ REGISTER_OP("DijkstraGrid")
 
 #include "tensorflow/core/framework/op_kernel.h"
 
+    void DijkstraGridGpuLauncher(int * grid_d, int * prev_d, int * mask_d, int * dist_d, 
+                                int * vars) ;
 
 using namespace tensorflow;
 
-class DijkstraGridOp : public OpKernel {
+class DijkstraGridGpuOp : public OpKernel {
   public:
-  explicit DijkstraGridOp(OpKernelConstruction* context) : OpKernel(context) {
+  explicit DijkstraGridGpuOp(OpKernelConstruction* context) : OpKernel(context) {
   
     OP_REQUIRES_OK(context,
                    context->GetAttr("start_x", &start_x));
@@ -46,38 +49,63 @@ class DijkstraGridOp : public OpKernel {
   }
 
   void Compute(OpKernelContext* context) override {
-    // Grab the input tensor
+    
+    Tensor mask_tensor;
+    Tensor dist_tensor;
+    Tensor vars_tensor;
+    Tensor input_tensor;
+    Tensor * output_tensor;
     
     input_tensor = context->input(0);
-    auto grid = input_tensor.template flat<int32>();
+    auto grid_d = input_tensor.template flat<int32>();
     
     
     OP_REQUIRES_OK(context, context->allocate_output(
                                  0, 
                                  TensorShape({size_x * size_y}), &output_tensor));
     
-    auto prev = output_tensor->flat<int32>();
+    auto prev_d = output_tensor->flat<int32>();
     
     
     OP_REQUIRES_OK(context, context->allocate_temp(
                                 DataTypeToEnum<int32>::value,
                                 TensorShape({size_x * size_y}), &mask_tensor));
-    auto mask = mask_tensor.template flat<int32>();
+    auto mask_d = mask_tensor.template flat<int32>();
     
     OP_REQUIRES_OK(context, context->allocate_temp(
                                 DataTypeToEnum<int32>::value,
                                 TensorShape({size_x * size_y}), &dist_tensor));
-    auto dist = dist_tensor.template flat<int32>();
+    auto dist_d = dist_tensor.template flat<int32>();
     
-    const int N = grid.size();
-    step = 0;
+    OP_REQUIRES_OK(context, context->allocate_temp(
+                                DataTypeToEnum<int32>::value,
+                                TensorShape({VARS_ARRAY_SIZE}), &vars_tensor));
+    auto vars_d = vars_tensor.template flat<int32>();
     
-    for (int rank = 0; rank < N; rank++) prev.data()[rank] = UNDEFINED;
-    mask.data() [get_rank(start_x, start_y)] = VISITED;
-    prev.data()[get_rank(start_x, start_y)] = -1;
-    dist.data()[get_rank(start_x, start_y)] = 1;
+    //const int N = grid.size();
+    //step = 0;
+    
+    for (int rank = 0; rank < prev_d.size(); rank++) prev_d.data()[rank] = UNDEFINED;
+    mask_d.data() [get_rank(start_x, start_y)] = VISITED;
+    prev_d.data()[get_rank(start_x, start_y)] = -1;
+    dist_d.data()[get_rank(start_x, start_y)] = 1;
 
+    vars_d.data()[STARTX] = start_x;
+    vars_d.data()[STARTY] = start_y;
+    vars_d.data()[STOPX] = stop_x;
+    vars_d.data()[STOPY] = stop_y;
+    vars_d.data()[SIZEX] = size_x;
+    vars_d.data()[SIZEY] = size_y;
+    vars_d.data()[WALLHEIGHT] = wall_height;
+    vars_d.data()[FOUND] = 0;
+    vars_d.data()[STEP] = 0;
+
+    DijkstraGridGpuLauncher(grid_d.data(), prev_d.data(), mask_d.data(), dist_d.data(), 
+                                vars_d.data()) ;
+                                
+    std::cout << VARS_ARRAY_SIZE<<" vars array size!! \n";
     
+    /*
     while( !found && step < size_x * size_y +1) {
         step ++;
         //std::cout << step << " = while loop i \n";
@@ -161,6 +189,7 @@ class DijkstraGridOp : public OpKernel {
 
         } // for
     } // while
+    */
 
     
     //std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
@@ -183,18 +212,15 @@ class DijkstraGridOp : public OpKernel {
     
     bool found = false;
     
-    Tensor mask_tensor;
-    Tensor dist_tensor;
-    //Tensor prev_tensor;
-    Tensor input_tensor;
-    Tensor * output_tensor;
+    
     
     float wall_height;
+    
     
     int get_x(int rank) { return -1 + rank - (size_x * (  (int) ( rank / size_x ) )) ; }
     int get_y(int rank) { return 0 +  (int) rank / size_x ; }
     int get_rank(int x, int y) {return 1+ ( (y ) * size_x ) + x  ; }
-    
+    /*
     bool near_visited( int rank) { 
         auto mask = mask_tensor.template flat<int32>();
         
@@ -284,7 +310,8 @@ class DijkstraGridOp : public OpKernel {
 
         
     }
+    */
 };
 
-REGISTER_KERNEL_BUILDER(Name("DijkstraGrid").Device(DEVICE_CPU), DijkstraGridOp);
+REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_CPU), DijkstraGridGpuOp);
 
