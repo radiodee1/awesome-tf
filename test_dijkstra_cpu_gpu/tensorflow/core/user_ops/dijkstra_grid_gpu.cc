@@ -22,7 +22,7 @@ REGISTER_OP("DijkstraGridGpu")
 
 #include "tensorflow/core/framework/op_kernel.h"
 
-    void DijkstraGridGpuLauncher(int * grid_d, int * prev_d, int * mask_d, int * dist_d, 
+    void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, 
                                 int * vars) ;
 
 using namespace tensorflow;
@@ -100,96 +100,12 @@ class DijkstraGridGpuOp : public OpKernel {
     vars_d.data()[FOUND] = 0;
     vars_d.data()[STEP] = 0;
 
-    DijkstraGridGpuLauncher(grid_d.data(), prev_d.data(), mask_d.data(), dist_d.data(), 
+    DijkstraGridGpuLauncher(size_x, size_y, grid_d.data(), prev_d.data(), mask_d.data(), dist_d.data(), 
                                 vars_d.data()) ;
                                 
     std::cout << VARS_ARRAY_SIZE<<" vars array size!! \n";
     
-    /*
-    while( !found && step < size_x * size_y +1) {
-        step ++;
-        //std::cout << step << " = while loop i \n";
-        //print();
-        for (int rank = 0; rank < N; rank++) {
-            
-            if (! found) { 
-            
-                
-                if (  mask.data()[rank] != WALL  ) { 
-                    //right
-                    if (get_y(rank) == get_y(rank + 1) && 
-                            rank + 1 < size_x * size_y && near_visited( rank) ) { 
-                        //std::cout << "right\n";
-                        if (! wall_found(rank+1,rank)) {
-                            
-                            
-                            must_check(rank + 1, rank);
-                            //break;
-                        }
-                        else {
-                            mask.data()[rank+1 ] = WALL;
-                        }
-                    }
-                    
-                    //left
-                    if (get_y(rank) == get_y(rank - 1) && 
-                            rank - 1 >= 0 && near_visited(rank) ){
-                            
-                        //std::cout << "left\n";
-                        if (! wall_found(rank -1, rank)) {
-                            
-                            
-                            must_check(rank -1, rank);
-                            //break;
-                        }
-                        else {
-                            mask.data()[rank -1] = WALL;
-                        }
-                    }
-                    //down
-                    if (rank + size_x < size_x * size_y && near_visited(rank) ){
-                        //std::cout << "down\n";
-                        if(! wall_found(rank+ size_x, rank) ) {
-                            
-                            
-                            must_check(rank + size_x, rank);
-                            //break;
-                        }
-                        else {
-                            mask.data()[rank + size_x] = WALL;
-                        }
-                    }
-                    //up
-                    if (rank - size_x >=0 && near_visited(rank) ) { 
-                        //std::cout << "up\n";
-                        if (! wall_found(rank - size_x, rank) ) {
-                        
-                            
-                            must_check(rank - size_x, rank);
-                            //break;
-                        }
-                        else {
-                            mask.data()[rank  - size_x] = WALL;
-                        }
-                    }
-                    
-                    if (near_visited(rank) ){
-                        
-                        if (true || mask.data()[rank] == UNDEFINED) mask.data()[rank] = step;
-                    }
-                    if ( rank == get_rank(stop_x,stop_y) && mask.data()[rank] != UNDEFINED ) {
-                        found = true;
-                        //std::cout << "stop here !!\n" ;
-                    }
-
-                    
-                }
-            
-            }
-
-        } // for
-    } // while
-    */
+    
 
     
     //std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
@@ -220,98 +136,8 @@ class DijkstraGridGpuOp : public OpKernel {
     int get_x(int rank) { return -1 + rank - (size_x * (  (int) ( rank / size_x ) )) ; }
     int get_y(int rank) { return 0 +  (int) rank / size_x ; }
     int get_rank(int x, int y) {return 1+ ( (y ) * size_x ) + x  ; }
-    /*
-    bool near_visited( int rank) { 
-        auto mask = mask_tensor.template flat<int32>();
-        
-        if(found) return false;
-        
-        if (mask.data()[rank] == WALL){
-            return false;
-        }
-        //right
-        if (get_y(rank) == get_y(rank + 1) && rank + 1 <= size_x * size_y ) {
-            if (mask.data()[rank + 1] != UNDEFINED && 
-                mask.data()[rank + 1] != WALL ) return true;
-        }
-        //left
-        if (get_y(rank) == get_y(rank - 1) && rank - 1 >= 0 ) {
-            if (mask.data()[rank - 1] != UNDEFINED && 
-                mask.data()[rank - 1] != WALL) return true;
-        }
-        //down
-        if (rank + size_x < size_x * size_y) {
-            if (mask.data()[rank + size_x] != UNDEFINED && 
-                mask.data()[rank + size_x] != WALL ) return true;
-        }
-        //up
-        if (rank - size_x >=0) {
-            if (mask.data()[rank - size_x] != UNDEFINED && 
-                mask.data()[rank - size_x ] != WALL) return true;
-        }
-        if (get_rank(start_x, start_y) == rank) {
-            //std::cout << "start!\n";
-            return true; 
-        }
-        
-        return false; 
-    }
-  
-    void must_check(int test , int rank) {
     
-        auto mask = mask_tensor.template flat<int32>();
-        auto dist = dist_tensor.template flat<int32>();
-        auto grid = input_tensor.template flat<int32>();
-
-        auto prev = output_tensor->flat<int32>();
-        
-        
-        
-        float a = WALL_MULT * sqrt ( 1 + pow(grid.data()[test] - grid.data()[rank], 2) );
-        int d =  dist.data()[rank] + (int) a;
-        
-        if (  ! wall_found(test,rank) && mask.data()[rank] != WALL && mask.data()[test] != WALL) {
-            
-            
-            if ((d < dist.data()[test] || dist.data()[test] == 0)   ){
-                if (true || get_x(rank) != start_x || get_y(rank) != start_y) {
-                    
-                    //if(get_rank(start_x,start_y) == rank) std::cout << "start " << rank << " " << start_x << " " << start_y <<"\n";
-                    prev.data()[test] = rank ;
-                    dist.data()[test] = d;
-                    
-                }
-                
-            
-            }
-        }
-        
-    }
-    
-    bool wall_found(int test, int rank) {
-        auto mask = mask_tensor.template flat<int32>();
-        auto grid = input_tensor.template flat<int32>();
-        float a = WALL_MULT * sqrt ( 1 + pow(grid.data()[test] - grid.data()[rank], 2) );
-        if ((a > wall_height * WALL_MULT && grid.data()[rank] <= grid.data()[test] )|| mask.data()[test] == WALL  ) {
-            //std::cout << test << " " << rank << " " << a << " -- wall!!\n";
-            return true; 
-        }
-        return false;
-    }
-    
-    void print() {
-        auto mask = input_tensor.template flat<int32>();
-
-        for (int rank = 0; rank < mask.size(); rank++) {
-            std::cout << mask.data()[rank] << ",";
-            if (rank % size_x == size_x - 1) std::cout << "\n";
-        }
-        std::cout << "\n";
-
-        
-    }
-    */
 };
 
-REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_CPU), DijkstraGridGpuOp);
+REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_GPU), DijkstraGridGpuOp);
 

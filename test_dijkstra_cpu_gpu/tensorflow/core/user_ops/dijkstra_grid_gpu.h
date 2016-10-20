@@ -1,5 +1,5 @@
-#ifndef DIJKSTRA_GRID_GPU
-#define DIJKSTRA_GRID_GPU
+#ifndef DIJKSTRA_GRID_GPU_H
+#define DIJKSTRA_GRID_GPU_H
 
 
 #define STARTX 0
