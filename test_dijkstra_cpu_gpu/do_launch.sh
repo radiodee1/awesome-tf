@@ -8,4 +8,6 @@
 #./test_op.py -mapname map.png -width 80 -height 80
 
 ## takes at least 2min 21sec on cpu
-./test_op.py -mapname img/maze.png -width 480 -height 480
+#./test_op.py -mapname img/maze.png -width 480 -height 480
+
+./test_op.py -height 8 -width 8  -stopx 7 -stopy 6 -startx 4 -starty 0 -gpu

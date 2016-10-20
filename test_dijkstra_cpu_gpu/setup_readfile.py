@@ -32,6 +32,7 @@ class SU(object):
         self.endy = -1 #self.height - 1
 
         self.all_coordinates = False
+        self.gpu = False
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
@@ -68,6 +69,7 @@ class SU(object):
                         -w-height <num>
                         -randomize-floor
                         -mapname <filename>
+                        -gpu
                     """
                     exit();
                     
@@ -122,6 +124,10 @@ class SU(object):
                     self.mapname = str(sys.argv[j+1]) 
                     self.gui = True
                     
+        if len(sys.argv) > 1:
+            for j in range(0, len(sys.argv)):
+                if sys.argv[j] == '-gpu':
+                    self.gpu = True
         
         if self.gui == True:
             dim = 100

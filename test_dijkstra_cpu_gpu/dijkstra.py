@@ -13,7 +13,7 @@ class Dijkstra(object):
     def __init__(self) :
         print "simple dijkstra for tensorflow"
         self.output = ''
-        self.dijkstra_grid_module = tf.load_op_library('tensorflow/core/user_ops/dijkstra_grid.so')
+        self.dijkstra_grid_module = None# tf.load_op_library('')
         
         self.width = 8#30
         self.height = 8#30
@@ -37,20 +37,38 @@ class Dijkstra(object):
         self.prev = []
         self.visited = []
         
+        self.gpu = False
+        
     def eval(self):
         #print  self.maze
+        if self.gpu : 
+            self.dijkstra_grid_module = tf.load_op_library('tensorflow/core/user_ops/dijkstra_grid_gpu.so')
+            with tf.Session(''):
+                self.output = self.dijkstra_grid_module.dijkstra_grid_gpu(
+                        self.maze,
+                        start_x = self.startx,
+                        start_y = self.starty,
+                        stop_x = self.stopx,
+                        stop_y = self.stopy,
+                        size_x = self.width,
+                        size_y = self.height,
+                        wall_height = self.wall_height
+                    ).eval()
+                    
+        else : 
+            self.dijkstra_grid_module = tf.load_op_library('tensorflow/core/user_ops/dijkstra_grid.so')
         
-        with tf.Session(''):
-            self.output = self.dijkstra_grid_module.dijkstra_grid(
-                    self.maze,
-                    start_x = self.startx,
-                    start_y = self.starty,
-                    stop_x = self.stopx,
-                    stop_y = self.stopy,
-                    size_x = self.width,
-                    size_y = self.height,
-                    wall_height = self.wall_height
-                ).eval()
+            with tf.Session(''):
+                self.output = self.dijkstra_grid_module.dijkstra_grid(
+                        self.maze,
+                        start_x = self.startx,
+                        start_y = self.starty,
+                        stop_x = self.stopx,
+                        stop_y = self.stopy,
+                        size_x = self.width,
+                        size_y = self.height,
+                        wall_height = self.wall_height
+                    ).eval()
         
         
     def get_output(self):
@@ -160,6 +178,7 @@ class Dijkstra(object):
     def set_special_printout(self, s) : self.special_printout = s 
     def set_wall_height(self, h) : self.wall_height = h
     def set_maze_printout_wall_height(self, h) : self.maze_printout_wall_height = h
+    def set_gpu(self, g) : self.gpu = g
 
     def get_x(self, rank) : return rank - (self.width * int(rank / self.width))
     def get_y(self, rank) : return int(rank / self.width)

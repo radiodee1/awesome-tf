@@ -8,6 +8,8 @@ if __name__ == '__main__':
     s = setup.SU()
     d = dijkstra.Dijkstra()
     
+    d.set_gpu(s.gpu)
+    
     if not s.get_is_gui() :
         d.set_maze(s.get_maze())
         d.set_startx(s.get_startx())
