@@ -120,6 +120,8 @@ class DijkstraGridGpuOp : public OpKernel {
   
   
   private:
+  
+    /*
     int start_x;
     int start_y;
     int stop_x;
@@ -130,7 +132,9 @@ class DijkstraGridGpuOp : public OpKernel {
     int step = 0;
     
     bool found = false;
-    
+    float wall_height;
+    */
+        
     /*
     Tensor mask_tensor;
     Tensor dist_tensor;
@@ -139,14 +143,14 @@ class DijkstraGridGpuOp : public OpKernel {
     Tensor * output_tensor;
     */
     
-    float wall_height;
+
     
-    
+    /*
     int get_x(int rank) { return -1 + rank - (size_x * (  (int) ( rank / size_x ) )) ; }
     int get_y(int rank) { return 0 +  (int) rank / size_x ; }
     int get_rank(int x, int y) {return 1+ ( (y ) * size_x ) + x  ; }
-    
+    */
 };
 
 REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_GPU), DijkstraGridGpuOp);
-
+//REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_CPU), DijkstraGridGpuOp);
