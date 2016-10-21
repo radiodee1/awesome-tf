@@ -1,4 +1,4 @@
-#include <cmath>
+#include <math.h>
 
 #if GOOGLE_CUDA
 #define EIGEN_USE_GPU
@@ -216,9 +216,9 @@ __global__ void DijkstraGridGpu(VARS_SIGNATURE_DECLARE )  {
   }
     void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars ) {
                                 
-        int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
+        //int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
     
-        int size = size_x * size_y;
+        //int size = size_x * size_y;
         
         /*
         cudaMalloc( &grid_d, size*sizeof(int));
