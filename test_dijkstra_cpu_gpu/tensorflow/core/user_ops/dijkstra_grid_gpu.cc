@@ -22,7 +22,7 @@ REGISTER_OP("DijkstraGridGpu")
     .Attr("wall_height: float = 2.5")
     .Output("prev: int32");
 
-//#include "tensorflow/core/framework/op_kernel.h"
+
 
     //void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars) ;
 
@@ -115,14 +115,6 @@ class DijkstraGridGpuOp : public OpKernel {
     //DijkstraGridGpuLauncher(size_x, size_y, grid_d, prev_d, mask_d, dist_d, vars_d) ;
                                 
 
-    
-    
-
-    
-    //std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
-    
-    //print();
-    
     
   }
   

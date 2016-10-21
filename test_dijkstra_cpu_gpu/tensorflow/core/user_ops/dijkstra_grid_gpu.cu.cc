@@ -15,7 +15,7 @@
 #define VARS_SIGNATURE_DECLARE int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars_d
 #define VARS_SIGNATURE_CALL   grid_d,prev_d,mask_d,dist_d,vars_d
 
-    
+/*
     __device__ bool wall_found(int test, int rank, VARS_SIGNATURE_DECLARE) {
     
         //auto mask = mask_tensor.template flat<int32>();
@@ -208,12 +208,9 @@ __global__ void DijkstraGridGpu(VARS_SIGNATURE_DECLARE )  {
     } // while
 
     
-    //std::cout << "loop = " << step << ", wall = " << wall_height << "\n";
-    
-    //print();
-    
-    
   }
+  
+*/
     void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars ) {
                                 
         //int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
