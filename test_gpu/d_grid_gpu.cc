@@ -14,8 +14,6 @@ REGISTER_OP("DGridGpu")
     .Attr("wall_height: float = 2.5")
     .Output("prev: int32");
 
-
-
 using namespace tensorflow;
     
     void run();
@@ -24,31 +22,30 @@ class DGridGpuOp : public OpKernel {
   public:
   explicit DGridGpuOp(OpKernelConstruction* context) : OpKernel(context) {
   
-    //run();
+    
   }
 
   void Compute(OpKernelContext* context) override {
     
-    Tensor input_tensor;
-    Tensor * output_tensor;
+    Tensor grid;
+    Tensor * prev;
     
-    input_tensor = context->input(0);
-    auto grid = input_tensor.template flat<int32>();
+    grid = context->input(0);
+    auto grid_host = grid.template flat<int32>();
     
     
     OP_REQUIRES_OK(context, context->allocate_output(
                                  0, 
-                                 TensorShape({64}), &output_tensor));
+                                 TensorShape({64}), &prev));
     
-    auto prev = output_tensor->flat<int32>();
-  
-    run();
+    auto prev_host = prev->flat<int32>();
+    
+    run(); // do something to grid_host and move it to grid_prev
+    
+    //exit
   }
-    
-  //private:
   
-    
 };
 
-REGISTER_KERNEL_BUILDER(Name("DGridGpu").Device(DEVICE_GPU).HostMemory("grid").HostMemory("prev"), DGridGpuOp);
+//REGISTER_KERNEL_BUILDER(Name("DGridGpu").Device(DEVICE_GPU).HostMemory("grid").HostMemory("prev"), DGridGpuOp);
 REGISTER_KERNEL_BUILDER(Name("DGridGpu").Device(DEVICE_CPU), DGridGpuOp);

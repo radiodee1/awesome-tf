@@ -38,13 +38,13 @@ if __name__ == '__main__':
     d.set_stopy(endy)
     d.set_width(width)
     d.set_height(height)
-    d.set_wall_height(10)
+    d.set_wall_height(10.0)
     d.set_maze_printout_wall_height(10 + 2)
 
     d.eval()
     print "maze with elevations"
     d.set_special_printout(True) 
-    d.print_output(s.get_maze() )
+    d.print_output(maze )
     
     print '----'
     print "maze path"

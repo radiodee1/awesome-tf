@@ -6,9 +6,9 @@
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 #include <stdio.h>
-#define SIZE	1024
+#define SIZE	20
 
-    __global__ void VectorAdd(int *a, int *b, int *c, int n)
+    __global__ void VectorAdd(  int *a, int *b, int *c, int n)
     {
         int i = threadIdx.x;
 
@@ -41,7 +41,7 @@
         cudaMemcpy( d_c, c, SIZE*sizeof(int), cudaMemcpyHostToDevice );
 
         // blocks, threads
-        VectorAdd<<< 1, SIZE >>>(d_a, d_b, d_c, SIZE);
+        VectorAdd<<< 1, SIZE >>>(  d_a, d_b, d_c, SIZE);
         
         cudaMemcpy( c, d_c, SIZE*sizeof(int), cudaMemcpyDeviceToHost );
 
