@@ -15,4 +15,12 @@
 
 
 
+#define WALL -1
+#define VISITED 1
+#define UNDEFINED 0
+
+#define WALL_MULT 100
+
+
+
 #endif

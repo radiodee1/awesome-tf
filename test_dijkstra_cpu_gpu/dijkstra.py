@@ -24,7 +24,7 @@ class Dijkstra(object):
         self.found = []
         
         self.special_printout = False
-        self.maze_printout_wall_height = 20
+        self.maze_printout_wall_height = 10
 
         self.startx = 3
         self.starty = 0# height - 1
@@ -88,6 +88,7 @@ class Dijkstra(object):
         
         if len(path) > 0 : 
             #self.special_printout = True
+            print path
             self.follow_path(path)
 
         for y in range(self.height):
@@ -115,6 +116,14 @@ class Dijkstra(object):
         if len(path) > 0 and self.special_printout :
             print
             print path
+            for y in range(self.height):
+                for x in range(self.width):
+                    if ( y * self.width) + x < len(output) :
+                        symbol = (str(path[(y * self.width) + x])) + ","
+                        sys.stdout.write(symbol)
+                print
+            sys.stdout.flush()
+        
         
         #print 3 == self.get_rank(self.get_x(3), self.get_y(3)), self.get_x(3), self.get_y(3), "calibrate!!"
         
@@ -124,7 +133,7 @@ class Dijkstra(object):
         i = 0 
         foundlist = []
     
-        found = prev[((self.stopy ) * self.width) + (   self.stopx ) ]
+        found = prev[((self.stopy  ) * self.width) + (   self.stopx  ) ]
         #print found, "stop", len(prev), prev
         
         #for i in self.output: 
@@ -150,7 +159,7 @@ class Dijkstra(object):
                 i += 1
             
         self.found = foundlist
-        #print foundlist, 'found', len(foundlist)
+        print foundlist, 'found', len(foundlist)
         print "----"
         
         i = 0
@@ -184,7 +193,7 @@ class Dijkstra(object):
     def set_maze_printout_wall_height(self, h) : self.maze_printout_wall_height = h
     def set_gpu(self, g) : self.gpu = g
 
-    def get_x(self, rank) : return rank - (self.width * int(rank / self.width))
+    def get_x(self, rank) : return 0 + rank - (self.width * int(rank / self.width))
     def get_y(self, rank) : return int(rank / self.width)
-    def get_rank(self, x, y ) : return ( y * self.width ) + x
+    def get_rank(self, x, y ) : return  0 + ( y * self.width ) + x
 

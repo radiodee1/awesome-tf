@@ -5,11 +5,6 @@
 
 #include "dijkstra_grid_gpu.h"
 
-#define WALL -1
-#define VISITED 1
-#define UNDEFINED 0
-
-#define WALL_MULT 100
 
 REGISTER_OP("DijkstraGridGpu")
     .Input("grid: int32")
@@ -82,9 +77,6 @@ class DijkstraGridGpuOp : public OpKernel {
     auto vars = vars_tensor.template flat<int32>();
     
     
-    //const int N = grid.size();
-    //step = 0;
-    
     
     for (int rank = 0; rank < prev.size(); rank++) prev.data()[rank] = UNDEFINED;
     mask.data() [get_rank(start_x, start_y)] = VISITED;
@@ -107,8 +99,8 @@ class DijkstraGridGpuOp : public OpKernel {
 
     grid_d = grid.data();
     prev_d = prev.data();
-    //mask_d = mask.data();
-    //dist_d = dist.data();
+    mask_d = mask.data();
+    dist_d = dist.data();
     vars_d = vars.data();
     
 
@@ -129,7 +121,7 @@ class DijkstraGridGpuOp : public OpKernel {
     int size_x;
     int size_y;
     
-    int step = 0;
+    //int step = 0;
     
     //bool found = false;
     float wall_height;
