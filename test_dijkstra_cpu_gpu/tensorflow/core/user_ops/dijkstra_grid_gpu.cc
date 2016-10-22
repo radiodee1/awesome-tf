@@ -24,7 +24,7 @@ REGISTER_OP("DijkstraGridGpu")
 
 
 
-    //void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars) ;
+    void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars) ;
 
 using namespace tensorflow;
 
@@ -112,7 +112,7 @@ class DijkstraGridGpuOp : public OpKernel {
     vars_d = vars.data();
     
 
-    //DijkstraGridGpuLauncher(size_x, size_y, grid_d, prev_d, mask_d, dist_d, vars_d) ;
+    DijkstraGridGpuLauncher(size_x, size_y, grid_d, prev_d, mask_d, dist_d, vars_d) ;
                                 
 
     
@@ -131,7 +131,7 @@ class DijkstraGridGpuOp : public OpKernel {
     
     int step = 0;
     
-    bool found = false;
+    //bool found = false;
     float wall_height;
     
         
@@ -143,14 +143,11 @@ class DijkstraGridGpuOp : public OpKernel {
     Tensor * output_tensor;
     
     
-
-    
-    
     int get_x(int rank) { return -1 + rank - (size_x * (  (int) ( rank / size_x ) )) ; }
     int get_y(int rank) { return 0 +  (int) rank / size_x ; }
     int get_rank(int x, int y) {return 1+ ( (y ) * size_x ) + x  ; }
     
 };
 
-//REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_GPU), DijkstraGridGpuOp);
+
 REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_CPU), DijkstraGridGpuOp);

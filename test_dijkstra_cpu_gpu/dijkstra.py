@@ -112,6 +112,10 @@ class Dijkstra(object):
             print
         sys.stdout.flush()
         
+        if len(path) > 0 and self.special_printout :
+            print
+            print path
+        
         #print 3 == self.get_rank(self.get_x(3), self.get_y(3)), self.get_x(3), self.get_y(3), "calibrate!!"
         
     def follow_path(self, prev):

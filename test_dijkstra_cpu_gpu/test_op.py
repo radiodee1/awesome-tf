@@ -38,4 +38,9 @@ if __name__ == '__main__':
         d.set_special_printout(False)
         d.print_output(s.get_maze() ,d.get_output())
 
+        print '----'
+        print "maze path"
+        d.set_special_printout(True)
+        d.print_output(s.get_maze() ,d.get_output())
+
 

@@ -4,6 +4,7 @@
 #define EIGEN_USE_GPU
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
+
 #include "dijkstra_grid_gpu.h"
 
 #define WALL -1
@@ -15,7 +16,7 @@
 #define VARS_SIGNATURE_DECLARE int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars_d
 #define VARS_SIGNATURE_CALL   grid_d,prev_d,mask_d,dist_d,vars_d
 
-/*
+
     __device__ bool wall_found(int test, int rank, VARS_SIGNATURE_DECLARE) {
     
         //auto mask = mask_tensor.template flat<int32>();
@@ -103,7 +104,7 @@
     
     
     
-__global__ void DijkstraGridGpu(VARS_SIGNATURE_DECLARE )  {
+__global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     
     
     
@@ -114,7 +115,8 @@ __global__ void DijkstraGridGpu(VARS_SIGNATURE_DECLARE )  {
     dist_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = 1;
 
     
-    while(  vars_d[FOUND] && vars_d[STEP] < vars_d[SIZEX] * vars_d[SIZEY] +1) {
+    
+    while( ! vars_d[FOUND] && vars_d[STEP] < vars_d[SIZEX] * vars_d[SIZEY] +1) {
         
         vars_d[STEP] ++;
         
@@ -124,13 +126,14 @@ __global__ void DijkstraGridGpu(VARS_SIGNATURE_DECLARE )  {
         int size_x = vars_d[SIZEX];
         int size_y = vars_d[SIZEY];
         
-        if (rank < vars_d[SIZEX] * vars_d[SIZEY] ){//  size_x * size_y) {
-
+        if (rank < vars_d[SIZEX] * vars_d[SIZEY] ){ 
+            
         
             if ( vars_d[FOUND] != 1) { 
             
                 
                 if (  mask_d[rank] != WALL  ) { 
+                    
                     //right
                     if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && 
                             rank + 1 < size_x * size_y && near_visited( rank, VARS_SIGNATURE_CALL) ) { 
@@ -210,14 +213,14 @@ __global__ void DijkstraGridGpu(VARS_SIGNATURE_DECLARE )  {
     
   }
   
-*/
+
     void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars ) {
                                 
-        //int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
+        int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
     
-        //int size = size_x * size_y;
+        int size = size_x * size_y;
         
-        /*
+        
         cudaMalloc( &grid_d, size*sizeof(int));
         cudaMalloc( &prev_d, size*sizeof(int));
         cudaMalloc( &mask_d, size*sizeof(int));
@@ -229,23 +232,27 @@ __global__ void DijkstraGridGpu(VARS_SIGNATURE_DECLARE )  {
         cudaMemcpy( mask_d, mask, size*sizeof(int), cudaMemcpyHostToDevice );
         cudaMemcpy( dist_d, dist, size*sizeof(int), cudaMemcpyHostToDevice );
         cudaMemcpy( vars_d, vars, VARS_ARRAY_SIZE*sizeof(int), cudaMemcpyHostToDevice );
-        */
+        
+        //cudaMemset(mask_d, 0, size*sizeof(int));
+        //cudaMemset(dist_d, 0, size*sizeof(int));
+    
+        
     
         // 1 block, size_x*size_y threads
-        //DijkstraGridGpu  <<< 1, size_x * size_y >>>( grid, prev, mask, dist, vars);//VARS_SIGNATURE_CALL );
+        DijkstraGridGpu  <<< 1, size_x * size_y >>>( grid_d, prev_d, mask_d, dist_d, vars_d);
         
-        //cudaMemcpy( prev, prev_d, size*sizeof(int), cudaMemcpyDeviceToHost );
+        cudaMemcpy( prev, prev_d, size*sizeof(int), cudaMemcpyDeviceToHost );
         
         //free(grid);
         //free(mask);
         //free(dist);
         //free(vars);
         
-        //cudaFree(grid_d);
-        //cudaFree(prev_d);
-        //cudaFree(mask_d);
-        //cudaFree(dist_d);
-        //cudaFree(vars_d);
+        cudaFree(grid_d);
+        cudaFree(prev_d);
+        cudaFree(mask_d);
+        cudaFree(dist_d);
+        cudaFree(vars_d);
     }
 
 
