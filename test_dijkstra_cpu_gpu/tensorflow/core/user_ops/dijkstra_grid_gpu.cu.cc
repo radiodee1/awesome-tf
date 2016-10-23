@@ -77,17 +77,20 @@
         float a = get_a(test, rank, grid_d);//(WALL_MULT * sqrt ( 1 + pow(grid_d[test] - grid_d[rank], 2) ));
         int d =  dist_d[rank] + (int) a;
         
-        if (  ! wall_found(test,rank, VARS_SIGNATURE_CALL) && (mask_d[rank] != WALL && mask_d[test] != WALL)) {
+        //if (  ! wall_found(test,rank, VARS_SIGNATURE_CALL) && (mask_d[rank] != WALL && mask_d[test] != WALL)) {
+            
+        if (  true || (mask_d[rank] != WALL && mask_d[test] != WALL)) {
             
             if ( test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED ) {
                         
-                vars_d[FOUND] ++;//=  5;//get_a(test, rank, grid_d);
+
                 //prev_d[test] = rank ;
+                vars_d[FOUND] ++;//=  5;//get_a(test, rank, grid_d);
                 //mask_d[test] = vars_d[STEP];
             }
             
             
-            if ((d < dist_d[test] || dist_d[test] == 0)  && mask_d[test] != WALL ){
+            if ((d < dist_d[test] || dist_d[test] == 0) ){// && mask_d[test] != WALL ){
                 if (true || get_x(rank, vars_d) != start_x || get_y(rank, vars_d) != start_y) {
                     
                     
@@ -249,7 +252,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     //__syncthreads();
                     if (near_visited(rank, VARS_SIGNATURE_CALL) ){
                         
-                        if (false || ( mask_d[rank] == UNDEFINED && mask_d[rank] != WALL)) {
+                        if (true || ( mask_d[rank] == UNDEFINED && mask_d[rank] != WALL)) {
                             mask_d[rank] = vars_d[STEP];
                         }
                     }
