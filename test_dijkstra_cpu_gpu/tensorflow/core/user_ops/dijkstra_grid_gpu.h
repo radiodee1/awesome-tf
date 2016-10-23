@@ -19,7 +19,7 @@
 #define VISITED 1
 #define UNDEFINED 0
 
-#define WALL_MULT 100
+#define WALL_MULT 1000
 
 
 

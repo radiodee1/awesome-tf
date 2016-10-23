@@ -40,7 +40,7 @@ class Dijkstra(object):
         self.gpu = False
         
     def eval(self):
-        #print  self.maze
+        print  self.maze
         if self.gpu : 
             self.dijkstra_grid_module = tf.load_op_library('tensorflow/core/user_ops/dijkstra_grid_gpu.so')
             with tf.Session(''):
@@ -133,7 +133,7 @@ class Dijkstra(object):
         i = 0 
         foundlist = []
     
-        found = prev[((self.stopy  ) * self.width) + (   self.stopx  ) ]
+        found = prev[((self.stopy  ) * self.width) + (   self.stopx  ) -1]
         #print found, "stop", len(prev), prev
         
         #for i in self.output: 

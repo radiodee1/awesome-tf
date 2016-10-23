@@ -47,9 +47,6 @@ class DijkstraGridGpuOp : public OpKernel {
 
   void Compute(OpKernelContext* context) override {
     
-    
-    
-    
     input_tensor = context->input(0);
     auto grid = input_tensor.template flat<int32>();
     
@@ -77,11 +74,12 @@ class DijkstraGridGpuOp : public OpKernel {
     auto vars = vars_tensor.template flat<int32>();
     
     
-    
+    /*
     for (int rank = 0; rank < prev.size(); rank++) prev.data()[rank] = UNDEFINED;
     mask.data() [get_rank(start_x, start_y)] = VISITED;
     prev.data()[get_rank(start_x, start_y)] = -1;
     dist.data()[get_rank(start_x, start_y)] = 1;
+    */
 
     vars.data()[STARTX] = start_x;
     vars.data()[STARTY] = start_y;
@@ -93,7 +91,7 @@ class DijkstraGridGpuOp : public OpKernel {
     vars.data()[FOUND] = 0;
     vars.data()[STEP] = 0;
     
-    std::cout << VARS_ARRAY_SIZE<<" vars array size!! \n";
+    //std::cout << VARS_ARRAY_SIZE<<" vars array size!! \n";
 
     int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
 
@@ -121,9 +119,7 @@ class DijkstraGridGpuOp : public OpKernel {
     int size_x;
     int size_y;
     
-    //int step = 0;
     
-    //bool found = false;
     float wall_height;
     
         
