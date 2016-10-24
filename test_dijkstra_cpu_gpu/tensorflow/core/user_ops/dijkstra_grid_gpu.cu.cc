@@ -44,8 +44,8 @@
         if ( test != -1 && test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED ) {
                     
             prev_d[test] = rank ;
-            vars_d[FOUND] =  99;//get_a(test, rank, grid_d);
-            //mask_d[test] = vars_d[STEP];
+            vars_d[FOUND] =  FOUND_CONST;
+            
         }
         
         
@@ -94,14 +94,14 @@
         if (  false || (mask_d[rank] != WALL && mask_d[test] != WALL)) {
             
             if ( test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED ) {
-                //dist_d[test] = d;
+                
                 prev_d[test] = rank ;
                 vars_d[FOUND] =  FOUND_CONST;
                 
             }
             
             
-            if ((d <= dist_d[test] || dist_d[test] == 0)  && mask_d[test] == UNDEFINED ){
+            if ((d <= dist_d[test] || dist_d[test] == 0   )  && mask_d[test] == UNDEFINED ){
                 if (true || get_x(rank, vars_d) != start_x || get_y(rank, vars_d) != start_y) {
                     
                     prev_d[test] = rank ;
@@ -131,11 +131,12 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         up = 0;
         down = 0;
         
-        if (threadIdx.x == 0 || true) vars_d[STEP] ++;
+        int rank = threadIdx.x;// + blockIdx.x * blockDim.x;
         
-        //__syncthreads();
+        if (rank == 0 || true) vars_d[STEP] ++;
         
-        int rank = threadIdx.x;
+        
+        
         
         int size_x = vars_d[SIZEX];
         int size_y = vars_d[SIZEY];
@@ -285,7 +286,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
 
     } // while
 
-    
+    vars_d[FOUND] = blockDim.x;
   }
   
 
@@ -294,7 +295,11 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
     
         int size = size_x * size_y;
-        
+        int SIZE = 1024;
+        int blocks =  size/SIZE ;
+        if (blocks == 0) blocks = 1;
+        int threads = SIZE;
+        if (size < SIZE || false) threads = size;
         
         cudaMalloc( &grid_d, size*sizeof(int));
         cudaMalloc( &prev_d, size*sizeof(int));
@@ -314,7 +319,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         
     
         // 1 block, size_x*size_y threads
-        DijkstraGridGpu  <<< 1, size_x * size_y >>>( grid_d, prev_d, mask_d, dist_d, vars_d);
+        DijkstraGridGpu  <<< blocks, threads >>>( grid_d, prev_d, mask_d, dist_d, vars_d);
         
         
         cudaMemcpy( prev, prev_d, size*sizeof(int), cudaMemcpyDeviceToHost );
@@ -322,6 +327,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         cudaMemcpy( mask, mask_d, size*sizeof(int), cudaMemcpyDeviceToHost );
         cudaMemcpy( dist, dist_d, size*sizeof(int), cudaMemcpyDeviceToHost );
         
+        printf("vars block %i threads %i \n", blocks,threads);
         printf("vars start x %i \n", vars[0]);
         printf("vars start y %i \n", vars[1]);
         printf("vars stop x %i \n", vars[2]);
