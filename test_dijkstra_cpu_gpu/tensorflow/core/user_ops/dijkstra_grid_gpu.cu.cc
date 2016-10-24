@@ -20,7 +20,7 @@
         int a =(int) get_a(test, rank, grid_d);
         
         if ((a >  vars_d[WALLHEIGHT]  * WALL_MULT && grid_d[rank] <= grid_d[test] )|| mask_d[test] == WALL || mask_d[rank] == WALL ) {
-            //mask_d[test] = WALL;
+            
             return true; 
         }
         return false;
@@ -28,7 +28,7 @@
   
     
    
-    __device__ bool near_visited( int rank, VARS_SIGNATURE_DECLARE) { 
+    __device__ bool near_visited( int test, int rank, VARS_SIGNATURE_DECLARE) { 
         
         int size_x = vars_d[SIZEX];
         int size_y = vars_d[SIZEY];
@@ -40,6 +40,15 @@
         if (mask_d[rank] == WALL){
             return false;
         }
+        
+        if ( test != -1 && test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED ) {
+                    
+            prev_d[test] = rank ;
+            vars_d[FOUND] =  99;//get_a(test, rank, grid_d);
+            //mask_d[test] = vars_d[STEP];
+        }
+        
+        
         //right
         if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && rank + 1 < size_x * size_y ) {
             if (mask_d[rank + 1] != UNDEFINED && 
@@ -60,9 +69,13 @@
             if (mask_d[rank - size_x] != UNDEFINED && 
                 mask_d[rank - size_x ] != WALL) return true;
         }
+        
+        
+        
+            
         if (get_rank(start_x, start_y, vars_d) == rank) {
             
-            //return true; 
+            return true; 
         }
         
         return false; 
@@ -74,29 +87,27 @@
         int start_y = vars_d[STARTY];
         
         
-        float a = get_a(test, rank, grid_d);//(WALL_MULT * sqrt ( 1 + pow(grid_d[test] - grid_d[rank], 2) ));
+        float a = get_a(test, rank, grid_d);
         int d =  dist_d[rank] + (int) a;
         
         //if (  ! wall_found(test,rank, VARS_SIGNATURE_CALL) && (mask_d[rank] != WALL && mask_d[test] != WALL)) {
             
-        if (  true || (mask_d[rank] != WALL && mask_d[test] != WALL)) {
+        if (  false || (mask_d[rank] != WALL && mask_d[test] != WALL)) {
             
             if ( test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED ) {
-                        
-
-                //prev_d[test] = rank ;
-                vars_d[FOUND] ++;//=  5;//get_a(test, rank, grid_d);
+                //dist_d[test] = d;
+                prev_d[test] = rank ;
+                vars_d[FOUND] =  55;//get_a(test, rank, grid_d);
                 //mask_d[test] = vars_d[STEP];
             }
             
             
-            if ((d < dist_d[test] || dist_d[test] == 0) ){// && mask_d[test] != WALL ){
+            if ((d <= dist_d[test] || dist_d[test] == 0) ){// && mask_d[test] != WALL ){
                 if (true || get_x(rank, vars_d) != start_x || get_y(rank, vars_d) != start_y) {
-                    
                     
                     prev_d[test] = rank ;
                     dist_d[test] = d;
-                    
+                    //mask_d[test] = vars_d[STEP];
                 }
             }
         }
@@ -109,10 +120,17 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     //start conditions...
     
     mask_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = VISITED;
-    prev_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = -1;//WALL_MULT;
-    dist_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = 1;//WALL_MULT; //1
+    prev_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = -1;
+    dist_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = 1;
+
+    int left,right,up,down;
 
     while(  vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] * vars_d[SIZEY] +1) {
+        
+        left = 0;
+        right = 0;
+        up = 0;
+        down = 0;
         
         if (threadIdx.x == 0 || true) vars_d[STEP] ++;
         
@@ -123,17 +141,17 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         int size_x = vars_d[SIZEX];
         int size_y = vars_d[SIZEY];
         
-        if (rank < vars_d[SIZEX] * vars_d[SIZEY] ){ 
+        if (rank < vars_d[SIZEX] * vars_d[SIZEY] +1 ){ 
             
         
             if ( false || vars_d[FOUND] == 0) { 
             
                 
                 if (  mask_d[rank] != WALL  ) { 
-                    /////////////////////////////
+                    
                     //right
                     if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && 
-                            rank + 1 < size_x * size_y && near_visited( rank, VARS_SIGNATURE_CALL) ) { 
+                            rank + 1 < size_x * size_y && near_visited(-1, rank, VARS_SIGNATURE_CALL) ) { 
                         
                         if (! wall_found(rank+1,rank, VARS_SIGNATURE_CALL)) {
                             
@@ -148,7 +166,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     //__syncthreads();
                     //left
                     if (get_y(rank, vars_d) == get_y(rank - 1, vars_d) && 
-                            rank - 1 >= 0 && near_visited(rank, VARS_SIGNATURE_CALL) ){
+                            rank - 1 >= 0 && near_visited(-1,rank, VARS_SIGNATURE_CALL) ){
                             
                         
                         if (! wall_found(rank -1, rank, VARS_SIGNATURE_CALL)) {
@@ -163,7 +181,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     }
                     //__syncthreads();
                     //down
-                    if (rank + size_x < size_x * size_y && near_visited(rank, VARS_SIGNATURE_CALL) ){
+                    if (rank + size_x < size_x * size_y && near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
                         
                         if(! wall_found(rank+ size_x, rank, VARS_SIGNATURE_CALL) ) {
                             
@@ -177,7 +195,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     }
                     //__syncthreads();
                     //up
-                    if (rank - size_x >=0 && near_visited(rank, VARS_SIGNATURE_CALL) ) { 
+                    if (rank - size_x >=0 && near_visited(-1, rank, VARS_SIGNATURE_CALL) ) { 
                         
                         if (! wall_found(rank - size_x, rank, VARS_SIGNATURE_CALL) ) {
                         
@@ -193,12 +211,12 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     __syncthreads();
                     //right
                     if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && 
-                            rank + 1 < size_x * size_y && near_visited( rank, VARS_SIGNATURE_CALL) ) { 
+                            rank + 1 < size_x * size_y && near_visited(- 1, rank, VARS_SIGNATURE_CALL) ) { 
                         
                         if (! wall_found(rank+1,rank, VARS_SIGNATURE_CALL)) {
                             
-                            
-                            must_check(rank + 1, rank, VARS_SIGNATURE_CALL);
+                            right = 1;
+                            //must_check(rank + 1, rank, VARS_SIGNATURE_CALL);
                             //break;
                         }
                         else {
@@ -208,13 +226,13 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     //__syncthreads();
                     //left
                     if (get_y(rank, vars_d) == get_y(rank - 1, vars_d) && 
-                            rank - 1 >= 0 && near_visited(rank, VARS_SIGNATURE_CALL) ){
+                            rank - 1 >= 0 && near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
                             
                         
                         if (! wall_found(rank -1, rank, VARS_SIGNATURE_CALL)) {
                             
-                            
-                            must_check(rank -1, rank, VARS_SIGNATURE_CALL);
+                            left = 1;
+                            //must_check(rank -1, rank, VARS_SIGNATURE_CALL);
                             //break;
                         }
                         else {
@@ -223,12 +241,12 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     }
                     //__syncthreads();
                     //down
-                    if (rank + size_x < size_x * size_y && near_visited(rank, VARS_SIGNATURE_CALL) ){
+                    if (rank + size_x < size_x * size_y && near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
                         
                         if(! wall_found(rank+ size_x, rank, VARS_SIGNATURE_CALL) ) {
                             
-                            
-                            must_check(rank + size_x, rank, VARS_SIGNATURE_CALL);
+                            down = 1;
+                            //must_check(rank + size_x, rank, VARS_SIGNATURE_CALL);
                             //break;
                         }
                         else {
@@ -237,30 +255,54 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     }
                     //__syncthreads();
                     //up
-                    if (rank - size_x >=0 && near_visited(rank, VARS_SIGNATURE_CALL) ) { 
+                    if (rank - size_x >=0 && near_visited(-1, rank, VARS_SIGNATURE_CALL) ) { 
                         
                         if (! wall_found(rank - size_x, rank, VARS_SIGNATURE_CALL) ) {
                         
-                            
-                            must_check(rank - size_x, rank, VARS_SIGNATURE_CALL);
+                            up = 1;
+                            //must_check(rank - size_x, rank, VARS_SIGNATURE_CALL);
                             //break;
                         }
                         else {
                             //mask_d[rank  - size_x] = WALL;
                         }
                     }
+                    /////////////////////////
+                    
+                    /////////////////////////
+                    __syncthreads();
+                    if(right == 1) {
+                        must_check(rank + 1, rank, VARS_SIGNATURE_CALL) ;
+                        //near_visited(rank + 1, rank, VARS_SIGNATURE_CALL);
+                    }
+                    if(up == 1) {
+                        must_check(rank - size_x, rank, VARS_SIGNATURE_CALL);
+                        //near_visited(rank - size_x, rank, VARS_SIGNATURE_CALL);
+                    }
+                    if(left == 1) {
+                        must_check(rank -1, rank, VARS_SIGNATURE_CALL);
+                        //near_visited(rank -1, rank, VARS_SIGNATURE_CALL);
+                    }
+                    if(down == 1) {
+                        must_check(rank + size_x, rank, VARS_SIGNATURE_CALL);
+                        //near_visited(rank + size_x, rank, VARS_SIGNATURE_CALL);
+                    }
+
                     //__syncthreads();
-                    if (near_visited(rank, VARS_SIGNATURE_CALL) ){
+                    if (near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
                         
                         if (true || ( mask_d[rank] == UNDEFINED && mask_d[rank] != WALL)) {
                             mask_d[rank] = vars_d[STEP];
                         }
                     }
+                    //if (vars_d[FOUND] != 0) continue;
                     //__syncthreads();
-                    if ( rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[rank] != UNDEFINED ) {
-                        
-                        vars_d[FOUND] = 1;
-                        
+                    if ( rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[rank] != UNDEFINED && mask_d[rank] != WALL) {
+                        if (true || right + left + up + down >= 1) {
+                            vars_d[FOUND] = 5;
+                            //mask_d[rank] = vars_d[STEP];
+                            
+                        }
                         
                     }
                     
