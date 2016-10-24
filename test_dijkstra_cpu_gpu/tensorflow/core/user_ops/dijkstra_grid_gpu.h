@@ -18,6 +18,7 @@
 #define WALL -1
 #define VISITED 1
 #define UNDEFINED 0
+#define FOUND_CONST 9999
 
 #define WALL_MULT 1000
 
