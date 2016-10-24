@@ -102,7 +102,7 @@
             }
             
             
-            if ((d <= dist_d[test] || dist_d[test] == 0) ){// && mask_d[test] != WALL ){
+            if ((d <= dist_d[test] || dist_d[test] == 0)  && mask_d[test] == UNDEFINED ){
                 if (true || get_x(rank, vars_d) != start_x || get_y(rank, vars_d) != start_y) {
                     
                     prev_d[test] = rank ;
