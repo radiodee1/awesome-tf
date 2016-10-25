@@ -16,7 +16,7 @@
     
     __device__ void lock(int * mutex) { while (atomicCAS(mutex, 0, 1) != 0 ) ; }
     __device__ void unlock(int * mutex) { atomicExch(mutex, 0); } 
-    __device__ void fence(int mutex, int num) { atomicAdd(&mutex, 1); while(mutex < num) ; }
+    __device__ void fence(int mutex, int num) { atomicAdd(&mutex, 1) ; while(mutex < num  ) ; }
     
     __device__ float get_a(int test, int rank, int * grid_d) {return (WALL_MULT * sqrt ( 1 + pow(grid_d[test] - grid_d[rank], 2) ));}
     
