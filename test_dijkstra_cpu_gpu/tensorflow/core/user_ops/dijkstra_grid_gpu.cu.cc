@@ -13,8 +13,10 @@
     __device__ int get_x(int rank, int * vars_d) { return -1 + rank - (vars_d[SIZEX] * (  (int) ( rank / vars_d[SIZEX] ) )) ; } //-1
     __device__ int get_y(int rank, int * vars_d) { return 0 +  (int) rank / vars_d[SIZEX]  ; } //0
     __device__ int get_rank(int x, int y, int * vars_d) {return 1 + ( (y ) * vars_d[SIZEX] ) + x  ; } // +1
+    
     __device__ void lock(int * mutex) { while (atomicCAS(mutex, 0, 1) != 0 ) ; }
     __device__ void unlock(int * mutex) { atomicExch(mutex, 0); } 
+    __device__ void fence(int mutex, int num) { atomicAdd(&mutex, 1); while(mutex < num) ; }
     
     __device__ float get_a(int test, int rank, int * grid_d) {return (WALL_MULT * sqrt ( 1 + pow(grid_d[test] - grid_d[rank], 2) ));}
     
@@ -95,7 +97,7 @@
         int d =  dist_d[rank] + (int) a;
         //unlock(&lock_d[rank]); 
         
-        //lock(&lock_d[test]);
+        lock(&lock_d[test]);
             
         if (   (mask_d[rank] != WALL && mask_d[test] != WALL) ) {
             
@@ -120,7 +122,7 @@
             
             
         }
-        //unlock(&lock_d[test]);
+        unlock(&lock_d[test]);
     }
     
     
@@ -145,6 +147,9 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         down = 0;
         
         int rank = threadIdx.x;// + blockIdx.x * blockDim.x;
+        
+        int fence1 = 0;
+        int fence2 = 0;
         
         if (rank == 0 || true) vars_d[STEP] ++;
         
@@ -211,8 +216,9 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                         
                     }
                     /////////////////////////////
-                    if (sync == 1) __syncthreads();
+                    //if (sync == 1) __syncthreads();
                     //__threadfence_system();
+                    fence(fence1, size_x* size_y);
                     
                     //right
                     if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && 
@@ -263,8 +269,9 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     /////////////////////////
                     
                     /////////////////////////
-                    if (sync == 1) __syncthreads();
+                    //if (sync == 1) __syncthreads();
                     //__threadfence_system();
+                    fence(fence2, size_x* size_y);
                     
                     if(right == 1) {
                         must_check(rank + 1, rank, VARS_SIGNATURE_CALL) ;
