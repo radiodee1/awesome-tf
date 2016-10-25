@@ -86,15 +86,15 @@
   
     __device__ void must_check(int test , int rank, VARS_SIGNATURE_DECLARE) {
     
-        int start_x = vars_d[STARTX];
-        int start_y = vars_d[STARTY];
+        //int start_x = vars_d[STARTX];
+        //int start_y = vars_d[STARTY];
         
         //lock(&lock_d[test]); // hangs
         
         float a = get_a(test, rank, grid_d);
         int d =  dist_d[rank] + (int) a;
 
-        lock(&lock_d[test]);
+        
             
         if (   (mask_d[rank] != WALL && mask_d[test] != WALL) ) {
             
@@ -105,17 +105,21 @@
                 
             }
             
+            lock(&lock_d[test]);
             
             if ((d <= dist_d[test] || dist_d[test] == 0   )  && mask_d[test] == UNDEFINED ){
-                if (true || get_x(rank, vars_d) != start_x || get_y(rank, vars_d) != start_y) {
+                if (true ) {
+                    
                     
                     prev_d[test] = rank ;
                     dist_d[test] = d;
-                    
+                    //mask_d[test] = vars_d[STEP]; 
                 }
             }
+            
+            unlock(&lock_d[test]);
         }
-        unlock(&lock_d[test]);
+        
     }
     
     
@@ -144,7 +148,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         if (rank == 0 || true) vars_d[STEP] ++;
         
         
-        
+        //lock(&lock_d[rank]);
         
         int size_x = vars_d[SIZEX];
         int size_y = vars_d[SIZEY];
@@ -269,9 +273,11 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     ////////////////////////
                     if (near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
                         
+                        //lock(&lock_d[rank]);
                         if (true || ( mask_d[rank] == UNDEFINED && mask_d[rank] != WALL)) {
                             mask_d[rank] = vars_d[STEP];
                         }
+                        //unlock(&lock_d[rank]);
                     }
 
                     if ( rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[rank] != UNDEFINED && mask_d[rank] != WALL) {
@@ -291,6 +297,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
 
         } // if
         
+        //unlock(&lock_d[rank]);
 
     } // while
 
