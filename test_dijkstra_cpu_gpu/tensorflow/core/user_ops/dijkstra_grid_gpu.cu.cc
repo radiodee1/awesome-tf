@@ -14,9 +14,24 @@
     __device__ int get_y(int rank, int * vars_d) { return 0 +  (int) rank / vars_d[SIZEX]  ; } //0
     __device__ int get_rank(int x, int y, int * vars_d) {return 1 + ( (y ) * vars_d[SIZEX] ) + x  ; } // +1
     
+    __device__ int xatomicAdd(int * address, int val){
+        int* address_as_int = ( int*)address;
+        int old = *address_as_int;  
+        int assumed;
+        do {
+            assumed = old;
+            old = atomicCAS(address_as_int, assumed ,val + assumed );
+
+        } while (assumed != old);
+
+        return old;
+    }
+    
+    
+    
     __device__ void lock(int * mutex) { while (atomicCAS(mutex, 0, 1) != 0  ) ; }
     __device__ void unlock(int * mutex) { atomicExch(mutex, 0); } 
-    __device__ void fence(int mutex, int num) { atomicAdd(&mutex, 1) ; while( mutex < num  ) ; }
+    __device__ void fence(int mutex, int num) { xatomicAdd(&mutex, 1) ; while(  mutex < num  ){ /* nothing */} ; }
     
     __device__ float get_a(int test, int rank, int * grid_d) {return (WALL_MULT * sqrt ( 1 + pow(grid_d[test] - grid_d[rank], 2) ));}
     
@@ -137,7 +152,12 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
 
     int left,right,up,down;
     
-    int sync = 1;
+    __shared__ int fence1;// = 0;
+    __shared__ int fence2;// = 0;
+        
+        
+    
+    //int sync = 1;
     
     while(  vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] * vars_d[SIZEY] +1) {
         
@@ -148,8 +168,8 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         
         int rank = threadIdx.x;// + blockIdx.x * blockDim.x;
         
-        __shared__ int fence1 = 0;
-        __shared__ int fence2 = 0;
+        fence1 = 0;
+        fence2 = 0;
         
         if (rank == 0 || true) vars_d[STEP] ++;
         
