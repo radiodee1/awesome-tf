@@ -11,7 +11,12 @@
 #define WALLHEIGHT 6
 #define FOUND 7
 #define STEP 8
-#define VARS_ARRAY_SIZE 9
+#define FENCE1 9
+#define FENCE2 10
+#define FENCE3 11
+#define FENCE4 12
+#define FENCE5 13
+#define VARS_ARRAY_SIZE 14
 
 
 
