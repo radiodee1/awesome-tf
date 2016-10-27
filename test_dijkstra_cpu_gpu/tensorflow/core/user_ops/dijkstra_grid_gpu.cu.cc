@@ -19,7 +19,7 @@
     
     __device__ void lock(int * mutex) { while (atomicCAS(mutex, 0, 1) != 0  ) ; }
     __device__ void unlock(int * mutex) { atomicExch(mutex, 0); } 
-    __device__ void fence(int * mutex, int num) { atomicAdd(mutex, 1) ; while( atomicCAS(mutex, num, num) < num); }
+    __device__ void fence(int * mutex, int num) { atomicAdd(mutex, 1) ; while( atomicCAS(mutex, num, num) < num);  }
     
     __device__ float get_a(int test, int rank, int * grid_d) {return (WALL_MULT * sqrt ( 1 + pow(grid_d[test] - grid_d[rank], 2) ));}
     
@@ -91,28 +91,32 @@
   
     __device__ void must_check(int test , int rank, VARS_SIGNATURE_DECLARE) {
     
-        //int start_x = vars_d[STARTX];
-        //int start_y = vars_d[STARTY];
         
-        //lock(&lock_d[rank]); // hangs
-        
-        float a = get_a(test, rank, grid_d);
-        int d =  dist_d[rank] + (int) a;
-        //unlock(&lock_d[rank]); 
-        
-        //lock(&lock_d[test]);
+
             
         if (   (mask_d[rank] != WALL && mask_d[test] != WALL) ) {
             
-            if ( test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED ) {
+            /*
+            if ( test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED && false ) {
                 
                 atomicExch(&prev_d[test], rank);
                 atomicExch(&vars_d[FOUND], FOUND_CONST);
             }
+            */
+            
+            lock(&lock_d[test]);
+            
+            bool undef =true;// (mask_d[test] == UNDEFINED);
+            float a = get_a(test, rank, grid_d);
+            int old = dist_d[test];
+            int d =  dist_d[rank] + (int) a;
+            bool rank_test = (mask_d[rank] != UNDEFINED);
             
             
             
-            if ((d <= dist_d[test] || dist_d[test] == 0   )  && mask_d[test] == UNDEFINED ){
+            //lock(&lock_d[test]); // 
+            //if ((d <= dist_d[test] || dist_d[test] == 0   )  && mask_d[test] == UNDEFINED && undef ){
+            if (( d <= old || old == 0 ) && undef && rank_test){
                 if (true ) {
                     
                     atomicExch(&prev_d[test], rank);
@@ -122,7 +126,7 @@
                     //mask_d[test] = vars_d[STEP]; 
                 }
             }
-            
+            unlock(&lock_d[test]);
             
         }
         //unlock(&lock_d[test]);
@@ -137,31 +141,37 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     mask_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = VISITED;
     prev_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = -1;
     dist_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = 1;
-
+    
+    int rank = threadIdx.x + blockIdx.x * blockDim.x;
+        
     int left,right,up,down;
     
+    int sync = 1;
     
+    int size_x = vars_d[SIZEX];
+    int size_y = vars_d[SIZEY];
     
-    int sync = 0;
-    
-    while(  vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] * vars_d[SIZEY] +1) {
+    while(  vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY]  +1) {
         
+        /*
         left = 0;
         right = 0;
         up = 0;
         down = 0;
+        */
         
-        int rank = threadIdx.x + blockIdx.x * blockDim.x;
+        //int rank = threadIdx.x + blockIdx.x * blockDim.x;
         
         //vars_d[FENCE2] = 0;
         
         if (rank == 0 || false) vars_d[STEP] ++;
         
+        //prev_d[rank] = 1;
         
         //lock(&lock_d[rank]);
         
-        int size_x = vars_d[SIZEX];
-        int size_y = vars_d[SIZEY];
+        //int size_x = vars_d[SIZEX];
+        //int size_y = vars_d[SIZEY];
         
         if (rank < vars_d[SIZEX] * vars_d[SIZEY] +1 ){ 
             
@@ -173,7 +183,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     
                     //right
                     if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && 
-                            rank + 1 < size_x * size_y && near_visited(-1, rank, VARS_SIGNATURE_CALL) ) { 
+                            rank + 1 < size_x * size_y   && near_visited(-1, rank, VARS_SIGNATURE_CALL) ) { 
                         
                         if ( wall_found(rank+1,rank, VARS_SIGNATURE_CALL)) {
                             
@@ -198,7 +208,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     }
                     
                     //down
-                    if (rank + size_x < size_x * size_y && near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
+                    if (rank + size_x < size_x * size_y  && near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
                         
                         if( wall_found(rank+ size_x, rank, VARS_SIGNATURE_CALL) ) {
                             
@@ -209,7 +219,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     }
                     
                     //up
-                    if (rank - size_x >=0 && near_visited(-1, rank, VARS_SIGNATURE_CALL) ) { 
+                    if (rank - size_x >=0  && near_visited(-1, rank, VARS_SIGNATURE_CALL) ) { 
                         
                         if ( wall_found(rank - size_x, rank, VARS_SIGNATURE_CALL) ) {
                         
@@ -219,11 +229,52 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                         }
                         
                     }
+                    
+                    if (near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
+                        
+                        //lock(&lock_d[rank]);
+                        if (false || ( mask_d[rank] == UNDEFINED && mask_d[rank] != WALL)) {
+                            //mask_d[rank] = vars_d[STEP];
+                            atomicExch(&mask_d[rank ], vars_d[STEP]);
+                        }
+                        //unlock(&lock_d[rank]);
+                    }
                     /////////////////////////////
-                    if (sync == 1) __syncthreads();
-                    //__threadfence_system();
-                    //fence(&vars_d[FENCE1], size_x * size_y );
-                    //vars_d[FENCE1] = 0;
+                }// if 1
+            }// if 2
+        }//if 3
+    }//while
+    
+    fence(&vars_d[FENCE1], (size_x * size_y ) );//* (vars_d[STEP]) );
+    vars_d[STEP] = 0;
+    
+    if (mask_d[rank] != WALL) mask_d[rank] = UNDEFINED;  
+                    
+    while( vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY]  +1) {
+        
+        left = 0;
+        right = 0;
+        up = 0;
+        down = 0;
+        
+        //vars_d[FENCE2] = 0;
+        
+        if (rank == 0 || false) vars_d[STEP] ++;
+        
+        
+        if (rank < vars_d[SIZEX] * vars_d[SIZEY] +1 ){ 
+            
+        
+            if ( false || vars_d[FOUND] == 0) { 
+            
+                
+                if (  mask_d[rank] != WALL  ) { 
+                    
+                    /////////////////////////////
+                    //if (sync == 1) __syncthreads();
+
+                    //fence(&vars_d[FENCE1], (size_x * size_y ) * (vars_d[STEP]) );
+                    //if (rank == 0) atomicExch(&vars_d[FENCE1], 0);
                     
                     //right
                     if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && 
@@ -275,10 +326,10 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     
                     /////////////////////////
                     if (sync == 1) __syncthreads();
-                    //__threadfence_system();
-                    fence(&vars_d[FENCE2], size_x * size_y );
-                    //vars_d[FENCE2] = 0;
                     
+                    //fence(&vars_d[FENCE2], (size_x * size_y) * (vars_d[STEP] ) );
+                    //if (rank == 0) atomicExch(&vars_d[FENCE2], 0);
+                    //lock(&lock_d[rank]); // 
                     if(right == 1) {
                         must_check(rank + 1, rank, VARS_SIGNATURE_CALL) ;
                     }
@@ -291,19 +342,24 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     if(down == 1) {
                         must_check(rank + size_x, rank, VARS_SIGNATURE_CALL);
                     }
+                    
+                    //lock(&lock_d[rank]);
                     ////////////////////////
+                    //fence(&vars_d[FENCE3], (size_x * size_y) * (vars_d[STEP] ) );
+                    
                     if (near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
                         
                         //lock(&lock_d[rank]);
-                        if (true || ( mask_d[rank] == UNDEFINED && mask_d[rank] != WALL)) {
+                        if (false || ( mask_d[rank] == UNDEFINED && mask_d[rank] != WALL)) {
                             //mask_d[rank] = vars_d[STEP];
                             atomicExch(&mask_d[rank ], vars_d[STEP]);
                         }
                         //unlock(&lock_d[rank]);
                     }
-
-                    if ( rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[rank] != UNDEFINED && mask_d[rank] != WALL) {
-                        if (true ) {
+                    //unlock(&lock_d[rank]); // 
+                    if ( rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d) && near_visited(-1, rank, VARS_SIGNATURE_CALL)  && 
+                            mask_d[rank] == UNDEFINED && mask_d[rank] != WALL) {
+                        if ( false ) {
                             //vars_d[FOUND] = FOUND_CONST;
 
                             atomicExch(&vars_d[FOUND], FOUND_CONST);
@@ -323,9 +379,10 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
 
     } // while
     
-    //fence2 = xatomicAdd(&fence1, 5) ;
-    //int b = xatomicAdd(&fence1, 1) ;
-    vars_d[FOUND] = blockDim.x;//fence2;// xatomicAdd(&fence1, 1) ;
+    
+    
+    //vars_d[FOUND] = blockDim.x;
+    
   }
   
 
@@ -334,7 +391,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d, * lock_d;
     
         int size = size_x * size_y;
-        int SIZE = 1024;
+        int SIZE = 512;//1024;
         int blocks =  size/SIZE ;
         if (blocks == 0) blocks = 1;
         int threads = SIZE;
@@ -382,7 +439,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         printf("start spot %i \n", mask[size_x * vars[STARTY] + vars[STARTX]  ]);
         
         for (int i = 0; i < size; i ++) {
-            printf(",%i ", dist[i]);
+            printf(",%i ", mask[i]);
         }
         printf(" size %i \n",size);
         
