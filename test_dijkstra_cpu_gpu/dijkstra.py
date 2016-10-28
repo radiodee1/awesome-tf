@@ -133,7 +133,7 @@ class Dijkstra(object):
         i = 0 
         foundlist = []
     
-        found = prev[((self.stopy  ) * self.width) + (   self.stopx  ) ]
+        found = prev[((self.stopy  ) * self.width) + (   self.stopx  ) -1]
         #print found, "stop", len(prev), prev
         
         #for i in self.output: 
