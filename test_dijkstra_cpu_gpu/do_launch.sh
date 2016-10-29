@@ -12,7 +12,7 @@
 
 
 
-./test_op.py -mapname img/map.png -width 60 -height 60 -gpu -w-height 50
+./test_op.py -mapname img/maze.png -width 60 -height 60 -gpu -w-height 50
 
 #./test_op.py -height 8 -width 8  -stopx 6 -stopy 7 -startx 4 -starty 0 -gpu -w-height 50 
 

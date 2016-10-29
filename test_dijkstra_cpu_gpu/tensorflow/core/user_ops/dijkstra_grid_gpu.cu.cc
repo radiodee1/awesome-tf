@@ -475,12 +475,13 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         printf("vars fence2 %i \n", vars[FENCE2]);
         printf("start spot %i \n", mask[size_x * vars[STARTY] + vars[STARTX]  ]);
         
+        /*
         for (int i = 0; i < size; i ++) {
             printf(",%i ", prev[i]);
             if (i % size_x == size_x -1) printf("\n");
         }
         printf(" size %i \n",size);
-        
+        */
 
         
         //free(grid);
