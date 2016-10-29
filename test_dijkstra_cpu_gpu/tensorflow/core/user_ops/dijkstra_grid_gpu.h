@@ -19,7 +19,7 @@
 #define VARS_ARRAY_SIZE 14
 
 
-
+#define WORKING -5
 #define WALL -1
 #define VISITED 1
 #define UNDEFINED 0
