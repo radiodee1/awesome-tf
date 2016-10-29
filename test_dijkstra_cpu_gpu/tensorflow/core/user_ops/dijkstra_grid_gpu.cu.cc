@@ -45,46 +45,41 @@
         
         if(vars_d[FOUND] >= 1) return false;
         
-        //lock(&lock2_d[rank]);
         
-        if (mask_d[rank] == WALL || mask_d[rank] == UNDEFINED){
+        
+        if (mask_d[rank] == WALL){// || mask_d[rank] == UNDEFINED){
             return false;
         }
         
-        if ( test != -1 && test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED ) {
-                    
-            //prev_d[test] = rank ;
-            //vars_d[FOUND] =  FOUND_CONST;
-            
-        }
         
         
         //right
         if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && rank + 1 < size_x * size_y ) {
             if (mask_d[rank + 1] != UNDEFINED && 
-                //mask_d[rank + 1] != WORKING && 
+                mask_d[rank + 1] != WORKING && 
                 mask_d[rank + 1] != WALL ) return true;
         }
         //left
         if (get_y(rank, vars_d) == get_y(rank - 1, vars_d) && rank - 1 >= 0 ) {
             if (mask_d[rank - 1] != UNDEFINED &&
-                //mask_d[rank - 1] != WORKING &&  
+                mask_d[rank - 1] != WORKING &&  
                 mask_d[rank - 1] != WALL) return true;
         }
         //down
         if (rank + size_x < size_x * size_y) {
             if (mask_d[rank + size_x] != UNDEFINED &&
-                //mask_d[rank + size_x] != WORKING &&  
+                mask_d[rank + size_x] != WORKING &&  
                 mask_d[rank + size_x] != WALL ) return true;
         }
         //up
         if (rank - size_x >=0) {
             if (mask_d[rank - size_x] != UNDEFINED &&
-                //mask_d[rank - size_x] != WORKING &&  
+                mask_d[rank - size_x] != WORKING &&  
                 mask_d[rank - size_x ] != WALL) return true;
         }
         
-        //unlock(&lock2_d[rank]);
+        
+        
         
             
         if (get_rank(start_x, start_y, vars_d) == rank) {
@@ -99,17 +94,11 @@
     
         
         //lock(&lock2_d[test]);
-        atomicExch(&lock2_d[test] , 1);
+        //atomicExch(&lock2_d[test] , 1);
             
         if ( true ||  (mask_d[rank] != WALL && mask_d[test] != WALL) ) {
             
-            /*
-            if ( test == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d)  && mask_d[test] == UNDEFINED && false ) {
-                
-                atomicExch(&prev_d[test], rank);
-                atomicExch(&vars_d[FOUND], FOUND_CONST);
-            }
-            */
+            
             
             //lock(&lock1_d[test]);
             //lock(&lock2_d[test]);
@@ -125,7 +114,7 @@
             //lock(&lock_d[test]); // 
             
             if (( d <= old || old == 0 ) && undef && rank_mask){
-                if ( true || (! wall_found( test, rank, VARS_SIGNATURE_CALL) && near_visited(-1, rank, VARS_SIGNATURE_CALL))) {
+                if ( true ) {
                     
                     atomicExch(&prev_d[test], rank);
                     atomicExch(&dist_d[test], d);
@@ -138,7 +127,7 @@
             //unlock(&lock2_d[test]);
 
         }
-        atomicExch(&lock2_d[test] , 0);
+        //atomicExch(&lock2_d[test] , 0);
     }
     
     
@@ -273,19 +262,19 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
             if ( false || vars_d[FOUND] == 0) { 
             
                 
-                if ( ( mask_d[rank] != WALL ) ){ // && mask_d[rank] != UNDEFINED ) { 
+                if ( ( mask_d[rank] != WALL && mask_d[rank] == UNDEFINED  ) && near_visited(-1, rank, VARS_SIGNATURE_CALL)  ){ // && mask_d[rank] != UNDEFINED ) { 
                     //lock(&lock2_d[rank]);
                     /////////////////////////////
                     //if (sync == 1) __syncthreads();
 
-                    if (near_visited(-1, rank, VARS_SIGNATURE_CALL) ){
+                    if (true ){
                         
 
-                        if (false || ( 
-                            mask_d[rank] == UNDEFINED && 
-                            mask_d[rank] != WALL)) {
+                        if (true){// || ( 
+                            //mask_d[rank] == UNDEFINED && 
+                            //mask_d[rank] != WALL)) {
                             
-                            //atomicExch(&mask_d[rank ], WORKING);
+                            atomicExch(&mask_d[rank ], WORKING);
 
                         }
 
@@ -400,8 +389,9 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                         
 
                         if (false || ( 
-                            //mask_d[rank] == WORKING && 
-                            mask_d[rank] != WALL)) {
+                            mask_d[rank] == WORKING //&& 
+                            //mask_d[rank] != WALL
+                            )) {
                             
                             atomicExch(&mask_d[rank ], VISITED);
 
