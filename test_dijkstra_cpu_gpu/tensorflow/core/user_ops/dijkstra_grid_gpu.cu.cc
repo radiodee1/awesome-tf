@@ -426,11 +426,11 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d, * lock1_d, * lock2_d;
     
         int size = size_x * size_y;
-        int SIZE = 512;//1024;
-        int blocks =  size/SIZE ;
-        if (blocks == 0) blocks = 1;
-        int threads = SIZE;
-        if (size < SIZE || false) threads = size;
+        int SIZE = 1024;
+        int blocks =  size/SIZE +1;
+
+        int threads = (int) (size /(float) blocks); 
+        if (blocks == 1 && size < SIZE ) threads = size;
         
         cudaMalloc( &grid_d, size*sizeof(int));
         cudaMalloc( &prev_d, size*sizeof(int));

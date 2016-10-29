@@ -12,8 +12,8 @@
 
 
 
-#./test_op.py -mapname img/map.png -width 20 -height 20 -gpu -w-height 50
+./test_op.py -mapname img/map.png -width 60 -height 60 -gpu -w-height 50
 
 #./test_op.py -height 8 -width 8  -stopx 6 -stopy 7 -startx 4 -starty 0 -gpu -w-height 50 
 
-./test_op.py -height 18 -width 18  -stopx 6 -stopy 17 -startx 4 -starty 0 -gpu -w-height 50 
+#./test_op.py -height 40 -width 40  -stopx 6 -stopy 39 -startx 4 -starty 0 -gpu -w-height 50 
