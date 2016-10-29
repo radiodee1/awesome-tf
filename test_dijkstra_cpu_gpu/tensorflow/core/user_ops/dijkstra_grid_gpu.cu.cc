@@ -376,7 +376,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     
                     if ( (rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d) && 
                             near_visited(-1, rank, VARS_SIGNATURE_CALL)  && 
-                            mask_d[rank] == UNDEFINED && 
+                            (mask_d[rank] == UNDEFINED || mask_d[rank] == WORKING) && 
                             mask_d[rank] != WALL) ){//|| is_filled(mask_d, size_x * size_y) ) {
                         if ( true ) {
 
