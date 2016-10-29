@@ -153,7 +153,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         
         
         
-        if (rank == 0 || true) vars_d[STEP] ++;
+        if (rank == 0 ) vars_d[STEP] ++;
         
         
         
@@ -242,7 +242,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     
     int count;
                     
-    while( vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY]  ) {
+    while( vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY] * vars_d[SIZEX] ) {
         
         
         left = 0;
@@ -262,10 +262,11 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
             if ( false || vars_d[FOUND] == 0) { 
             
                 
-                if ( ( mask_d[rank] != WALL && mask_d[rank] == UNDEFINED  ) && near_visited(-1, rank, VARS_SIGNATURE_CALL)  ){ // && mask_d[rank] != UNDEFINED ) { 
-                    //lock(&lock2_d[rank]);
+                if ( ( mask_d[rank] != WALL && mask_d[rank] == UNDEFINED  ) && 
+                    near_visited(-1, rank, VARS_SIGNATURE_CALL)  ){ // && mask_d[rank] != UNDEFINED ) { 
+                    
                     /////////////////////////////
-                    //if (sync == 1) __syncthreads();
+
 
                     if (true ){
                         
