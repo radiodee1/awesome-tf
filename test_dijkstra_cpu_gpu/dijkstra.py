@@ -129,7 +129,7 @@ class Dijkstra(object):
         
     def follow_path(self, prev):
         ## call this after end is found!! ##
-        dim = self.width * self.height 
+        dim = self.width * self.height * self.width * self.height
         i = 0 
         foundlist = []
     

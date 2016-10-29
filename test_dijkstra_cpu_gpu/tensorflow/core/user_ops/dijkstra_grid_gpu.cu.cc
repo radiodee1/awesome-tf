@@ -45,13 +45,9 @@
         
         if(vars_d[FOUND] >= 1) return false;
         
-        
-        
-        if (mask_d[rank] == WALL){// || mask_d[rank] == UNDEFINED){
+        if (mask_d[rank] == WALL){
             return false;
         }
-        
-        
         
         //right
         if (get_y(rank, vars_d) == get_y(rank + 1, vars_d) && rank + 1 < size_x * size_y ) {
@@ -77,9 +73,6 @@
                 mask_d[rank - size_x] != WORKING &&  
                 mask_d[rank - size_x ] != WALL) return true;
         }
-        
-        
-        
         
             
         if (get_rank(start_x, start_y, vars_d) == rank) {
@@ -149,7 +142,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     int size_x = vars_d[SIZEX];
     int size_y = vars_d[SIZEY];
     
-    while(  vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY]  +1) {
+    while(  vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY] +1) {
         
         
         
@@ -262,8 +255,9 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
             if ( false || vars_d[FOUND] == 0) { 
             
                 
-                if ( ( mask_d[rank] != WALL && mask_d[rank] == UNDEFINED  ) && 
-                    near_visited(-1, rank, VARS_SIGNATURE_CALL)  ){ // && mask_d[rank] != UNDEFINED ) { 
+                if ( ( mask_d[rank] != WALL && mask_d[rank] == UNDEFINED   && 
+                    near_visited(-1, rank, VARS_SIGNATURE_CALL) ) ||
+                    rank == get_rank(vars_d[STARTX], vars_d[STARTY], vars_d) ){ 
                     
                     /////////////////////////////
 
@@ -377,10 +371,11 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     if ( (rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d) && 
                             near_visited(-1, rank, VARS_SIGNATURE_CALL)  && 
                             (mask_d[rank] == UNDEFINED || mask_d[rank] == WORKING) && 
-                            mask_d[rank] != WALL) ){//|| is_filled(mask_d, size_x * size_y) ) {
+                            mask_d[rank] != WALL) ){
+                            
                         if ( true ) {
 
-
+                            atomicExch(&mask_d[rank ], VISITED);
                             atomicExch(&vars_d[FOUND], FOUND_CONST);
                         }
                         
@@ -426,7 +421,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d, * lock1_d, * lock2_d;
     
         int size = size_x * size_y;
-        int SIZE = 1024;
+        int SIZE = 512;
         int blocks =  size/SIZE +1;
 
         int threads = (int) (size /(float) blocks); 

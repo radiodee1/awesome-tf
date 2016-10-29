@@ -12,7 +12,10 @@
 
 
 
-./test_op.py -mapname img/maze.png -width 60 -height 60 -gpu -w-height 50
+#./test_op.py -mapname img/maze.png -width 480 -height 480 -gpu -w-height 50
+
+## takes 9.6 secs... works most times -- doesn't freeze
+./test_op.py -mapname img/map.png -width 50 -height 50 -gpu -w-height 50
 
 #./test_op.py -height 8 -width 8  -stopx 6 -stopy 7 -startx 4 -starty 0 -gpu -w-height 50 
 
