@@ -1,4 +1,5 @@
 #include <math.h>
+#include <sys/time.h>
 
 #if GOOGLE_CUDA
 #define EIGEN_USE_GPU
@@ -438,15 +439,23 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         //cudaMemset(lock1_d, 0, size*sizeof(int));
         //cudaMemset(lock2_d, 0, size*sizeof(int));
         
-        // 1 block, size_x*size_y threads
+        struct timespec start, end;
+
+        clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+
         DijkstraGridGpu  <<< blocks, threads >>>( grid_d, prev_d, mask_d, dist_d, vars_d );
         
+        clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+
+        float delta_us = (float) (end.tv_nsec - start.tv_nsec)   / 1000;
+
         
         cudaMemcpy( prev, prev_d, size*sizeof(int), cudaMemcpyDeviceToHost );
         cudaMemcpy( vars, vars_d, VARS_ARRAY_SIZE*sizeof(int), cudaMemcpyDeviceToHost );
         cudaMemcpy( mask, mask_d, size*sizeof(int), cudaMemcpyDeviceToHost );
         cudaMemcpy( dist, dist_d, size*sizeof(int), cudaMemcpyDeviceToHost );
         
+        printf("time elapsed on gpu %f \n", delta_us);
         printf("vars block %i threads %i \n", blocks,threads);
         printf("vars start x %i \n", vars[0]);
         printf("vars start y %i \n", vars[1]);
