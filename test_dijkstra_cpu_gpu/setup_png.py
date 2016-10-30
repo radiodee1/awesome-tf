@@ -59,33 +59,40 @@ class Interface(object) :
 		red =(255,0,0)
 		green = (0,255,0)
 		blue = (0,0,255)
+		blocksize = (w /readfile.width) -2
+		if blocksize <= 2 : blocksize = 4
+		
+		self.controldim = 16 
+		if blocksize + 2 > 16 : self.controldim = blocksize +2 # w/readfile.width 
+		#print blocksize , self.controldim
+		
 		self.boxborder = 5
-		self.boxwidth = 48
-		self.boxheight = 16
+		self.boxwidth = 3 * self.controldim # 48
+		self.boxheight = self.controldim # 16
 		self.box = pg.Surface((self.boxwidth + (self.boxborder * 2), 
 			self.boxheight + (self.boxborder * 2)))
 		self.box.fill(gray)
-		boxred = pg.Surface((16,16))
+		boxred = pg.Surface((self.controldim,self.controldim))
 		boxred.fill(red)
-		boxgreen = pg.Surface((16,16))
+		boxgreen = pg.Surface((self.controldim,self.controldim))
 		boxgreen.fill(green)
-		boxblue = pg.Surface((16,16))
+		boxblue = pg.Surface((self.controldim,self.controldim))
 		boxblue.fill(blue)
 		self.box.blit(boxgreen, (0 + self.boxborder,0 + self.boxborder))
-		self.box.blit(boxred, (16 + self.boxborder,0 + self.boxborder))
-		self.box.blit(boxblue, (32 + self.boxborder, 0 + self.boxborder))
+		self.box.blit(boxred, (self.controldim + self.boxborder,0 + self.boxborder))
+		self.box.blit(boxblue, (self.controldim * 2 + self.boxborder, 0 + self.boxborder))
 		self.mousex = 0
 		self.mousey = 0
 		self.boundtop = h - (self.box.get_height() - self.boxborder)
 		self.boundbottom = h - self.boxborder
 		self.boundgreenleft = w - (self.box.get_width() -  self.boxborder)
-		self.boundgreenright = w - (self.box.get_width() -  self.boxborder) + 16
-		self.boundredleft = w - (self.box.get_width() -  self.boxborder) + 16
-		self.boundredright = w - (self.box.get_width() -  self.boxborder) + 32
-		self.boundblueleft = w - (self.box.get_width() -  self.boxborder) + 32
-		self.boundblueright = w - (self.box.get_width() -  self.boxborder) + 48
-		blocksize = (w /readfile.width) -2
-		if blocksize <= 2 : blocksize = 4
+		self.boundgreenright = w - (self.box.get_width() -  self.boxborder) + self.controldim #16
+		self.boundredleft = w - (self.box.get_width() -  self.boxborder) + self.controldim #16
+		self.boundredright = w - (self.box.get_width() -  self.boxborder) + self.controldim * 2 #32
+		self.boundblueleft = w - (self.box.get_width() -  self.boxborder) + self.controldim * 2 #32
+		self.boundblueright = w - (self.box.get_width() -  self.boxborder) + self.controldim * 3 #48
+		
+		
 		self.startblock = pg.Surface((blocksize,blocksize))
 		self.startblock.fill(green)
 		self.endblock = pg.Surface((blocksize,blocksize))
@@ -240,7 +247,7 @@ class Interface(object) :
 			
 			
 			endtime = time.clock()
-			print  endtime - starttime , 'time on cpu'
+			print  endtime - starttime , 'time on processor'
 			tfuser.follow_path(tfuser.output)
 		
 		## print screen with solution ##

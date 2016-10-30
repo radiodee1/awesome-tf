@@ -40,7 +40,7 @@ class Dijkstra(object):
         self.gpu = False
         
     def eval(self):
-        print  self.maze
+        #print  self.maze
         if self.gpu : 
             self.dijkstra_grid_module = tf.load_op_library('tensorflow/core/user_ops/dijkstra_grid_gpu.so')
             with tf.Session(''):
@@ -88,7 +88,7 @@ class Dijkstra(object):
         
         if len(path) > 0 : 
             #self.special_printout = True
-            print path
+            #print path
             self.follow_path(path)
 
         for y in range(self.height):

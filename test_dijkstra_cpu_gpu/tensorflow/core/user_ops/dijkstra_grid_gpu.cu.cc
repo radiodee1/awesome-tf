@@ -13,13 +13,13 @@
 #define VARS_SIGNATURE_CALL   grid_d,prev_d,mask_d,dist_d,vars_d 
 
 
-    __device__ int get_x(int rank, int * vars_d) { return -1 + rank - (vars_d[SIZEX] * (  (int) ( rank / vars_d[SIZEX] ) )) ; } //-1
-    __device__ int get_y(int rank, int * vars_d) { return 0 +  (int) rank / vars_d[SIZEX]  ; } //0
-    __device__ int get_rank(int x, int y, int * vars_d) {return 1 + ( (y ) * vars_d[SIZEX] ) + x  ; } // +1
+    __device__ int get_x(int rank, int * vars_d) { return -1 + rank - (vars_d[SIZEX] * (  (int) ( rank / vars_d[SIZEX] ) )) ; } 
+    __device__ int get_y(int rank, int * vars_d) { return 0 +  (int) rank / vars_d[SIZEX]  ; } 
+    __device__ int get_rank(int x, int y, int * vars_d) {return 1 + ( (y ) * vars_d[SIZEX] ) + x  ; } 
     __device__ bool is_filled(int * mask, int size) {bool value = true; for(int i = 0; i < size; i ++) {if( mask[i] == UNDEFINED) value = false; } ; return value;}
     
     
-    __device__ void lock(int * mutex) { while (atomicCAS(mutex, 0, 1) != 0  ) ; } //!= 0
+    __device__ void lock(int * mutex) { while (atomicCAS(mutex, 0, 1) != 0  ) ; } 
     __device__ void unlock(int * mutex) { atomicExch(mutex, 0); } 
     __device__ void fence(int * mutex, int num) { atomicAdd(mutex, 1) ; while( atomicCAS(mutex, num, num) < num);  }
     
@@ -388,10 +388,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                         }
 
                     }
-
                     
-                    //unlock(&lock2_d[rank]);
-
                     
                 }
                 
@@ -442,7 +439,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         //cudaMemset(lock2_d, 0, size*sizeof(int));
         
         // 1 block, size_x*size_y threads
-        DijkstraGridGpu  <<< blocks, threads >>>( grid_d, prev_d, mask_d, dist_d, vars_d );//, lock1_d, lock2_d);
+        DijkstraGridGpu  <<< blocks, threads >>>( grid_d, prev_d, mask_d, dist_d, vars_d );
         
         
         cudaMemcpy( prev, prev_d, size*sizeof(int), cudaMemcpyDeviceToHost );
