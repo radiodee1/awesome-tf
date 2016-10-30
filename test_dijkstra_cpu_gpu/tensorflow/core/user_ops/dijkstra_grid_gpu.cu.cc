@@ -9,9 +9,9 @@
 #include "device_functions.h" 
 
 #define VARS_SIGNATURE_DECLARE int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars_d 
-//, int * lock1_d, int * lock2_d
+
 #define VARS_SIGNATURE_CALL   grid_d,prev_d,mask_d,dist_d,vars_d 
-//,lock1_d,lock2_d
+
 
     __device__ int get_x(int rank, int * vars_d) { return -1 + rank - (vars_d[SIZEX] * (  (int) ( rank / vars_d[SIZEX] ) )) ; } //-1
     __device__ int get_y(int rank, int * vars_d) { return 0 +  (int) rank / vars_d[SIZEX]  ; } //0
