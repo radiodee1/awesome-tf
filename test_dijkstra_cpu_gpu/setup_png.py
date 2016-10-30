@@ -62,9 +62,9 @@ class Interface(object) :
 		blocksize = (w /readfile.width) -2
 		if blocksize <= 2 : blocksize = 4
 		
-		self.controldim = 16 
-		if blocksize  < 16 : self.controldim =( blocksize +2) * 2  
-		print blocksize , self.controldim
+		self.controldim =( blocksize +2) * 2  
+		if self.controldim < 16 : self.controldim = 16
+		#print blocksize , self.controldim
 		
 		self.boxborder = 5
 		self.boxwidth = 3 * self.controldim # 48
