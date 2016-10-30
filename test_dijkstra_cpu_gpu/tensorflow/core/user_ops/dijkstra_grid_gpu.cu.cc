@@ -8,8 +8,10 @@
 #include "dijkstra_grid_gpu.h"
 #include "device_functions.h" 
 
-#define VARS_SIGNATURE_DECLARE int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars_d, int * lock1_d, int * lock2_d
-#define VARS_SIGNATURE_CALL   grid_d,prev_d,mask_d,dist_d,vars_d,lock1_d,lock2_d
+#define VARS_SIGNATURE_DECLARE int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars_d 
+//, int * lock1_d, int * lock2_d
+#define VARS_SIGNATURE_CALL   grid_d,prev_d,mask_d,dist_d,vars_d 
+//,lock1_d,lock2_d
 
     __device__ int get_x(int rank, int * vars_d) { return -1 + rank - (vars_d[SIZEX] * (  (int) ( rank / vars_d[SIZEX] ) )) ; } //-1
     __device__ int get_y(int rank, int * vars_d) { return 0 +  (int) rank / vars_d[SIZEX]  ; } //0
@@ -86,15 +88,9 @@
     __device__ void must_check(int test , int rank, VARS_SIGNATURE_DECLARE) {
     
         
-        //lock(&lock2_d[test]);
-        //atomicExch(&lock2_d[test] , 1);
-            
+        
         if ( true ||  (mask_d[rank] != WALL && mask_d[test] != WALL) ) {
             
-            
-            
-            //lock(&lock1_d[test]);
-            //lock(&lock2_d[test]);
             
             bool undef = (mask_d[test] != WALL); 
             float a = get_a(test, rank, grid_d);
@@ -102,9 +98,7 @@
             int d =  dist_d[rank] + (int) a;
             bool rank_mask = true;//(mask_d[rank] == WORKING);
             
-            //unlock(&lock2_d[test]);
             
-            //lock(&lock_d[test]); // 
             
             if (( d <= old || old == 0 ) && undef && rank_mask){
                 if ( true ) {
@@ -117,10 +111,10 @@
                 }
             }
 
-            //unlock(&lock2_d[test]);
+            
 
         }
-        //atomicExch(&lock2_d[test] , 0);
+        
     }
     
     
@@ -284,7 +278,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                                     ! wall_found(rank +1, rank, VARS_SIGNATURE_CALL) 
                                     ) { 
                                 
-                                if ( lock2_d[rank + 1] == 0){// && mask_d[rank+1] != WORKING) {
+                                if (true){// lock2_d[rank + 1] == 0){
                                     
                                     //right = 1;
                                     must_check(rank + 1, rank, VARS_SIGNATURE_CALL) ;
@@ -307,7 +301,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                                     ! wall_found(rank - 1, rank, VARS_SIGNATURE_CALL) ){
                                     
                                 
-                                if (lock2_d[rank - 1] == 0 ){//&& mask_d[rank-1] != WORKING) {
+                                if (true ){//lock2_d[rank - 1] == 0 ){
                                     
                                     //left = 1;
                                     must_check(rank -1, rank, VARS_SIGNATURE_CALL);
@@ -328,7 +322,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                                     near_visited(-1, rank, VARS_SIGNATURE_CALL) &&
                                     ! wall_found(rank + size_x, rank, VARS_SIGNATURE_CALL) ){
                                 
-                                if( lock2_d[rank + size_x] == 0 ){//&& mask_d[rank+size_x] != WORKING) {
+                                if(true ){//lock2_d[rank + size_x] == 0 ){
                                     
                                     //down = 1;
                                     must_check(rank + size_x, rank, VARS_SIGNATURE_CALL);
@@ -349,7 +343,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                                     near_visited(-1, rank, VARS_SIGNATURE_CALL) &&
                                     ! wall_found(rank - size_x, rank, VARS_SIGNATURE_CALL) ) { 
                                 
-                                if ( lock2_d[rank - size_x] == 0 ){// && mask_d[rank - size_x] != WORKING) {
+                                if ( true){// lock2_d[rank - size_x] == 0 ){
                                 
                                     //up = 1;
                                     must_check(rank - size_x, rank, VARS_SIGNATURE_CALL);
@@ -418,13 +412,13 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
 
     void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars ) {
         
-        int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d, * lock1_d, * lock2_d;
+        int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;//, * lock1_d, * lock2_d;
     
         int size = size_x * size_y;
-        int SIZE = 512;
+        int SIZE = 1024;
         int blocks =  size/SIZE +1;
 
-        int threads = (int) (size /(float) blocks); 
+        int threads = SIZE;//1 + (int) (size /(float) blocks); 
         if (blocks == 1 && size < SIZE ) threads = size;
         
         cudaMalloc( &grid_d, size*sizeof(int));
@@ -432,8 +426,8 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         cudaMalloc( &mask_d, size*sizeof(int));
         cudaMalloc( &dist_d, size*sizeof(int));
         cudaMalloc( &vars_d, VARS_ARRAY_SIZE*sizeof(int));
-        cudaMalloc( &lock1_d, size*sizeof(int));
-        cudaMalloc( &lock2_d, size*sizeof(int));
+        //cudaMalloc( &lock1_d, size*sizeof(int));
+        //cudaMalloc( &lock2_d, size*sizeof(int));
 
         cudaMemcpy( grid_d, grid, size*sizeof(int), cudaMemcpyHostToDevice );
         //cudaMemcpy( prev_d, prev, size*sizeof(int), cudaMemcpyHostToDevice );
@@ -444,11 +438,11 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         cudaMemset(mask_d, 0, size*sizeof(int));
         cudaMemset(dist_d, 0, size*sizeof(int));
         cudaMemset(prev_d, 0, size*sizeof(int));
-        cudaMemset(lock1_d, 0, size*sizeof(int));
-        cudaMemset(lock2_d, 0, size*sizeof(int));
+        //cudaMemset(lock1_d, 0, size*sizeof(int));
+        //cudaMemset(lock2_d, 0, size*sizeof(int));
         
         // 1 block, size_x*size_y threads
-        DijkstraGridGpu  <<< blocks, threads >>>( grid_d, prev_d, mask_d, dist_d, vars_d, lock1_d, lock2_d);
+        DijkstraGridGpu  <<< blocks, threads >>>( grid_d, prev_d, mask_d, dist_d, vars_d );//, lock1_d, lock2_d);
         
         
         cudaMemcpy( prev, prev_d, size*sizeof(int), cudaMemcpyDeviceToHost );
@@ -489,8 +483,8 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         cudaFree(mask_d);
         cudaFree(dist_d);
         cudaFree(vars_d);
-        cudaFree(lock1_d);
-        cudaFree(lock2_d);
+        //cudaFree(lock1_d);
+        //cudaFree(lock2_d);
     }
 
 
