@@ -63,8 +63,8 @@ class Interface(object) :
 		if blocksize <= 2 : blocksize = 4
 		
 		self.controldim = 16 
-		if blocksize + 2 > 16 : self.controldim =( blocksize +2) * 2  
-		#print blocksize , self.controldim
+		if blocksize  < 16 : self.controldim =( blocksize +2) * 2  
+		print blocksize , self.controldim
 		
 		self.boxborder = 5
 		self.boxwidth = 3 * self.controldim # 48

@@ -19,10 +19,10 @@
 
 #./test_op.py -height 8 -width 8  -stopx 6 -stopy 7 -startx 4 -starty 0 -gpu -w-height 50 
 
-#./test_op.py -height 50 -width 50  -mapname img/map.png -gpu -w-height 50 
+./test_op.py -height 50 -width 50  -mapname img/map.png -gpu -w-height 50 
 
-## takes 10.46 secs
-./test_op.py -mapname img/map.png -width 70 -height 70  -stopx 35 -stopy 6 -startx 47 -starty 57 -gpu -w-height 50 
+## takes 8.626 secs
+#./test_op.py -mapname img/map.png -width 70 -height 70  -stopx 35 -stopy 6 -startx 47 -starty 57 -gpu -w-height 50 
 
 ## takes 0.2 secs
 #./test_op.py -mapname img/map.png -width 70 -height 70  -stopx 35 -stopy 6 -startx 47 -starty 57  -w-height 50 
