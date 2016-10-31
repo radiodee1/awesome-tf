@@ -8,7 +8,7 @@
 #include <stdio.h>
 #define SIZE	20
 
-    __global__ void VectorAdd(  int *a, int *b, int *c, int n)
+    __global__ void VectorAdd( const int *a, int *b, int *c, int n)
     {
         int i = threadIdx.x;
 
@@ -17,7 +17,7 @@
     }
 
     
-    void run() {
+    void run(const int * in, int * out) {
         int *a, *b, *c;
         int *d_a, *d_b, *d_c;
 
@@ -41,8 +41,9 @@
         cudaMemcpy( d_c, c, SIZE*sizeof(int), cudaMemcpyHostToDevice );
 
         // blocks, threads
-        VectorAdd<<< 1, SIZE >>>(  d_a, d_b, d_c, SIZE);
-        
+        VectorAdd<<< 1, SIZE >>>(  in, out, d_c, SIZE);
+        //VectorAdd<<< 1, SIZE >>>(  d_a, d_b, d_c, SIZE);
+                
         cudaMemcpy( c, d_c, SIZE*sizeof(int), cudaMemcpyDeviceToHost );
 
         for( int i = 0; i < 10; ++i)

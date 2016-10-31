@@ -16,7 +16,7 @@ REGISTER_OP("DGridGpu")
 
 using namespace tensorflow;
     
-    void run();
+    void run(const int * in, int * out);
     
 class DGridGpuOp : public OpKernel {
   public:
@@ -27,25 +27,25 @@ class DGridGpuOp : public OpKernel {
 
   void Compute(OpKernelContext* context) override {
     
-    Tensor grid;
+    
     Tensor * prev;
     
-    grid = context->input(0);
-    auto grid_host = grid.template flat<int32>();
+    const Tensor& grid = context->input(0);
     
+    auto grid_host = grid.flat<int32>();    
     
     OP_REQUIRES_OK(context, context->allocate_output(
                                  0, 
                                  TensorShape({64}), &prev));
     
-    auto prev_host = prev->flat<int32>();
+    auto prev_host = prev->template flat<int32>();
     
-    run(); // do something to grid_host and move it to grid_prev
+    run(grid_host.data(), prev_host.data()); // do something to grid_host and move it to prev_host
     
     //exit
   }
   
 };
 
-//REGISTER_KERNEL_BUILDER(Name("DGridGpu").Device(DEVICE_GPU).HostMemory("grid").HostMemory("prev"), DGridGpuOp);
-REGISTER_KERNEL_BUILDER(Name("DGridGpu").Device(DEVICE_CPU), DGridGpuOp);
+REGISTER_KERNEL_BUILDER(Name("DGridGpu").Device(DEVICE_GPU), DGridGpuOp);
+//REGISTER_KERNEL_BUILDER(Name("DGridGpu").Device(DEVICE_CPU), DGridGpuOp);

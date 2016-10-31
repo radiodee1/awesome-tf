@@ -425,7 +425,9 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
 
         float delta_us = (float) (end.tv_nsec - start.tv_nsec)   / 1000;
 
+        
         printf("time elapsed on gpu %f \n", delta_us);
+        /*
         printf("vars block %i threads %i \n", blocks,threads);
         printf("vars start x %i \n", vars[0]);
         printf("vars start y %i \n", vars[1]);
@@ -439,7 +441,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         printf("vars fence1 %i \n", vars[FENCE1]);
         printf("vars fence2 %i \n", vars[FENCE2]);
         printf("start spot %i \n", mask[size_x * vars[STARTY] + vars[STARTX]  ]);
-        
+        */
 
     }
 
