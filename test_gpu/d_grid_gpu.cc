@@ -1,17 +1,10 @@
-//#include <cmath>
+
 
 #include "tensorflow/core/framework/op.h"
 #include "tensorflow/core/framework/op_kernel.h"
 
 REGISTER_OP("DGridGpu")
     .Input("grid: int32")
-    .Attr("start_x: int = 0")
-    .Attr("start_y: int = 0")
-    .Attr("stop_x: int = 28")
-    .Attr("stop_y: int = 28")
-    .Attr("size_x: int = 28")
-    .Attr("size_y: int = 28")
-    .Attr("wall_height: float = 2.5")
     .Output("prev: int32");
 
 using namespace tensorflow;
@@ -28,19 +21,19 @@ class DGridGpuOp : public OpKernel {
   void Compute(OpKernelContext* context) override {
     
     
-    Tensor * prev;
+    Tensor* prev_h = NULL;
     
-    const Tensor& grid = context->input(0);
+    const Tensor& grid_h = context->input(0);
     
-    auto grid_host = grid.flat<int32>();    
+    auto grid = grid_h.flat<int32>();    
     
     OP_REQUIRES_OK(context, context->allocate_output(
                                  0, 
-                                 TensorShape({64}), &prev));
+                                 TensorShape({64}), &prev_h));
     
-    auto prev_host = prev->template flat<int32>();
+    auto prev = prev_h->flat<int32>();
     
-    run(grid_host.data(), prev_host.data()); // do something to grid_host and move it to prev_host
+    run(grid.data(), prev.data()); // do something to grid_host and move it to prev_host
     
     //exit
   }

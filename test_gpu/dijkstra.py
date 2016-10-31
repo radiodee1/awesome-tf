@@ -46,13 +46,6 @@ class Dijkstra(object):
             with tf.Session(''):
                 self.output = self.dijkstra_grid_module.d_grid_gpu(
                         self.maze,
-                        start_x = self.startx,
-                        start_y = self.starty,
-                        stop_x = self.stopx,
-                        stop_y = self.stopy,
-                        size_x = self.width,
-                        size_y = self.height,
-                        wall_height = self.wall_height
                     ).eval()
                     
         else : 
