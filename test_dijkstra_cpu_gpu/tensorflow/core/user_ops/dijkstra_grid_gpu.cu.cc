@@ -407,6 +407,41 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     
   }
   
+    void DijkstraGridGpuLauncherTF(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars) {
+        int size = size_x * size_y;
+        int SIZE = 1024;
+        int blocks =  size/SIZE +1;
+
+        int threads = SIZE;//1 + (int) (size /(float) blocks); 
+        if (blocks == 1 && size < SIZE ) threads = size;
+        
+        struct timespec start, end;
+
+        clock_gettime(CLOCK_MONOTONIC_RAW, &start);
+
+        DijkstraGridGpu  <<< blocks, threads >>>( grid, prev, mask, dist, vars );
+        
+        clock_gettime(CLOCK_MONOTONIC_RAW, &end);
+
+        float delta_us = (float) (end.tv_nsec - start.tv_nsec)   / 1000;
+
+        printf("time elapsed on gpu %f \n", delta_us);
+        printf("vars block %i threads %i \n", blocks,threads);
+        printf("vars start x %i \n", vars[0]);
+        printf("vars start y %i \n", vars[1]);
+        printf("vars stop x %i \n", vars[2]);
+        printf("vars stop y %i \n", vars[3]);
+        printf("vars size x %i \n", vars[4]);
+        printf("vars size y %i \n", vars[5]);
+        printf("vars wallheight %i \n", vars[6]);
+        printf("vars found %i \n", vars[7]);
+        printf("vars step %i \n", vars[8]);
+        printf("vars fence1 %i \n", vars[FENCE1]);
+        printf("vars fence2 %i \n", vars[FENCE2]);
+        printf("start spot %i \n", mask[size_x * vars[STARTY] + vars[STARTX]  ]);
+        
+
+    }
 
     void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars ) {
         
