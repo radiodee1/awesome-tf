@@ -45,7 +45,7 @@ class Dijkstra(object):
             self.dijkstra_grid_module = tf.load_op_library('d_grid_gpu.so')
             with tf.Session(''):
                 self.output = self.dijkstra_grid_module.d_grid_gpu(
-                        self.maze,
+                        self.maze
                     ).eval()
                     
         else : 
