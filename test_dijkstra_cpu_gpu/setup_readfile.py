@@ -33,6 +33,7 @@ class SU(object):
 
         self.all_coordinates = False
         self.gpu = False
+        self.skip_end = False
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
@@ -89,12 +90,14 @@ class SU(object):
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-stopx':
                     self.endx = int(sys.argv[j+1]) #-1
+                    if self.endx < 0 : self.skip_end = True
                     #if self.dim_input > 480 : self.dim_input = 480
 
         if len(sys.argv) > 1:
             for j in range(0, len(sys.argv)):
                 if sys.argv[j] == '-stopy':
                     self.endy = int(sys.argv[j+1]) #-1
+                    if self.endy < 0 : self.skip_end = True
                     #if self.dim_input > 480 : self.dim_input = 480
                     
         if len(sys.argv) > 1:
@@ -139,8 +142,9 @@ class SU(object):
         
         if self.startx == -1 : self.startx = 0
         if self.starty == -1 : self.starty = 0
-        if self.endx == -1 : self.endx = 0
-        if self.endy == -1 : self.endy = 0
+        if not self.skip_end :
+            if self.endx < 0 : self.endx = 0
+            if self.endy < 0 : self.endy = 0
         
         i = 0
         k = 0

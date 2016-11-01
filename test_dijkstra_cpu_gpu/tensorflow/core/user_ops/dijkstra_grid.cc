@@ -149,7 +149,7 @@ class DijkstraGridOp : public OpKernel {
                         
                         if (true || mask.data()[rank] == UNDEFINED) mask.data()[rank] = step;
                     }
-                    if ( rank == get_rank(stop_x,stop_y) && mask.data()[rank] != UNDEFINED ) {
+                    if (stop_x >=0 && stop_y >= 0 && rank == get_rank(stop_x,stop_y) && mask.data()[rank] != UNDEFINED ) {
                         found = true;
                         //std::cout << "stop here !!\n" ;
                     }
@@ -193,7 +193,7 @@ class DijkstraGridOp : public OpKernel {
     
     int get_x(int rank) { return -1 + rank - (size_x * (  (int) ( rank / size_x ) )) ; }
     int get_y(int rank) { return 0 +  (int) rank / size_x ; }
-    int get_rank(int x, int y) {return 1+ ( (y ) * size_x ) + x  ; }
+    int get_rank(int x, int y) {return abs(1+ ( (y ) * size_x ) + x ) ; }
     
     bool near_visited( int rank) { 
         auto mask = mask_tensor.template flat<int32>();

@@ -16,7 +16,7 @@
 
     __device__ int get_x(int rank, int * vars_d) { return -1 + rank - (vars_d[SIZEX] * (  (int) ( rank / vars_d[SIZEX] ) )) ; } 
     __device__ int get_y(int rank, int * vars_d) { return 0 +  (int) rank / vars_d[SIZEX]  ; } 
-    __device__ int get_rank(int x, int y, int * vars_d) {return 1 + ( (y ) * vars_d[SIZEX] ) + x  ; } 
+    __device__ int get_rank(int x, int y, int * vars_d) {return abs( 1 + ( (y ) * vars_d[SIZEX] ) + x )  ; } 
     __device__ bool is_filled(int * mask, int size) {bool value = true; for(int i = 0; i < size; i ++) {if( mask[i] == UNDEFINED) value = false; } ; return value;}
     
     
@@ -363,7 +363,8 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     /////////////////////////
                     
                     
-                    if ( (rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d) && 
+                    if ( vars_d[STOPX] >= 0 && vars_d[STOPY] >= 0 && 
+                        (rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d) && 
                             near_visited(-1, rank, VARS_SIGNATURE_CALL)  && 
                             (mask_d[rank] == UNDEFINED || mask_d[rank] == WORKING) && 
                             mask_d[rank] != WALL) ){
