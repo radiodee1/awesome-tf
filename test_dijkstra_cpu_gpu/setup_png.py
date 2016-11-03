@@ -22,7 +22,7 @@ class Interface(object) :
 		self.block_screen_1 = True ## select smaller map
 		self.block_screen_2 = True ## select start and stop
 		#self.block_screen_3 = True ## print results
-		
+		self.action_detect = False
 		
 	def solve_png(self , tfuser, readfile):
 	
@@ -127,6 +127,7 @@ class Interface(object) :
 						running = 0
 						self.quit = 1	
 					if event.type == pg.KEYUP:
+						self.action_detect = True
 						if event.key == pg.K_RETURN:
 							running = 0
 						if event.key == pg.K_UP:
@@ -145,8 +146,10 @@ class Interface(object) :
 						if event.key == pg.K_RIGHT:
 							x += 5
 							if x + readfile.width > screen.get_width() : 
-								x = screen.get_width() - readfile.width 			
-			
+								x = screen.get_width() - readfile.width 
+											
+				self.gui_instructions( screen, 1, event, w, h)
+				
 				screensurf = surface.copy()
 				screen.fill(white)
 				screen.blit(screensurf,(0,0))
@@ -202,6 +205,8 @@ class Interface(object) :
 		self.HOLD_START = 4
 		self.HOLD_END = 5
 		
+		self.action_detect = False
+		
 		## skip if all coordinates are specified at command line ##
 		if self.block_screen_2 == True :
 			self.running = 1
@@ -215,6 +220,7 @@ class Interface(object) :
 				screen.fill((white))
 				screen.blit(screensurf,(0,0))
 				self.gui_controls(screen, event, w,h)
+				self.gui_instructions(screen, 2, event, w, h )
 				pg.display.flip()
 			
 			print "-startx", self.startx
@@ -299,6 +305,7 @@ class Interface(object) :
 		self.mousey = self.mousey - (self.wallbox.get_height() / 2)
 		if event.type == pg.MOUSEBUTTONDOWN:
 			#print 'here mouse'
+			self.action_detect = True
 			left , middle, right = pg.mouse.get_pressed() 
 			if left == True:
 				
@@ -367,6 +374,21 @@ class Interface(object) :
 			yy = y  
 			self.gui_state = 0
 		return (xx,yy)
+
+	def gui_instructions(self, screen, num, event, w, h):
+		mousex , mousey = pg.mouse.get_pos()
+		## mouse hover ##
+		if (not self.action_detect) and mousex > 16 and mousey > 16 and \
+				(mousey < self.boundtop and mousex < self.boundgreenleft ) :
+		
+			if   num == 0:
+				surface = pg.image.load("instructions_0.png")
+			elif num == 1:
+				surface = pg.image.load("instructions_1.png")
+			elif num == 2:
+				surface = pg.image.load("instructions_2.png")
+			screen.blit(surface,(0,0))
+			pg.display.flip()
 
 	def show_maze(self, maze = [], width = 10, height = 10, symbols=True):
 		
