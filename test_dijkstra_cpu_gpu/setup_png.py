@@ -23,6 +23,8 @@ class Interface(object) :
 		self.block_screen_2 = True ## select start and stop
 		#self.block_screen_3 = True ## print results
 		self.action_detect = False
+		self.blit_instructions = False
+
 		
 	def solve_png(self , tfuser, readfile):
 	
@@ -113,7 +115,7 @@ class Interface(object) :
 		## display first screen ##
 		screensurf = surface
 		screen = pg.display.set_mode((w, h))
-		pg.display.set_caption('dijkstra-cpu', 'dijkstra-cpu')
+		pg.display.set_caption('dijkstra-prog', 'dijkstra-prog')
 		screen.fill((white))
 		
 		## skip if all coordinates are specified at command line ##
@@ -154,7 +156,7 @@ class Interface(object) :
 				screen.fill(white)
 				screen.blit(screensurf,(0,0))
 				pgd.rectangle(screen, ((x,y),(readfile.width,readfile.height)), (255,0,0))
-				pg.display.flip()
+				if not self.blit_instructions : pg.display.flip()
 			
 		## display second screen ##
 		screen.fill((white))
@@ -221,7 +223,7 @@ class Interface(object) :
 				screen.blit(screensurf,(0,0))
 				self.gui_controls(screen, event, w,h)
 				self.gui_instructions(screen, 2, event, w, h )
-				pg.display.flip()
+				if not self.blit_instructions : pg.display.flip()
 			
 			print "-startx", self.startx
 			print "-starty", self.starty
@@ -380,16 +382,20 @@ class Interface(object) :
 		## mouse hover ##
 		if (not self.action_detect) and mousex > 16 and mousey > 16 and \
 				(mousey < self.boundtop and mousex < self.boundgreenleft ) :
-		
+			self.blit_instructions = True
+			
 			if   num == 0:
-				surface = pg.image.load("instructions_0.png")
+				surface = pg.image.load("img/instructions_0.png")
 			elif num == 1:
-				surface = pg.image.load("instructions_1.png")
+				surface = pg.image.load("img/instructions_1.png")
 			elif num == 2:
-				surface = pg.image.load("instructions_2.png")
+				surface = pg.image.load("img/instructions_2.png")
 			screen.blit(surface,(0,0))
 			pg.display.flip()
-
+		else:  self.blit_instructions = False
+		
+		
+			
 	def show_maze(self, maze = [], width = 10, height = 10, symbols=True):
 		
 		if len(maze) != height * width:
