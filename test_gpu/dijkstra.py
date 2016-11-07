@@ -1,5 +1,10 @@
+##from __future__ import absolute_import
+
 import sys
 import tensorflow as tf
+import numpy as np
+
+
 
 START = -2
 STOP = -3
@@ -40,12 +45,17 @@ class Dijkstra(object):
         self.gpu = False
         
     def eval(self):
-        #print  self.maze
+        nums = np.zeros((64), dtype=np.int32) 
+        #nums =  [0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9]
+        self.maze = tf.Variable(tf.zeros([64], dtype=tf.int32), name="grid")
+        #self.maze = nums
+        print  self.maze
         if self.gpu : 
-            self.dijkstra_grid_module = tf.load_op_library('d_grid_gpu.so')
+            self.grid_module = tf.load_op_library('d_grid_gpu.so')
             with tf.Session(''):
-                self.output = self.dijkstra_grid_module.d_grid_gpu(
+                self.output = self.grid_module.grid_gpu(
                         self.maze
+                        
                     ).eval()
                     
         else : 

@@ -4,7 +4,7 @@
 #include "third_party/eigen3/unsupported/Eigen/CXX11/Tensor"
 
 #include <stdio.h>
-#define SIZE	20
+#define SIZE	10
 
     __global__ void VectorAdd(  int *in,  int n)
     {

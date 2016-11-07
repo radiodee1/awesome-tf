@@ -25,12 +25,13 @@ if __name__ == '__main__':
     
     onethird = int(height / 3)
     twothirds = int(height * 2 / 3 )
+    
     for i in range (0, 6) : #(0,7)
         maze[ (onethird * width) + i] = WALL
 
     for i in range (4, width) :
         maze[ (twothirds * width) + i] = WALL
-
+    
     d.set_maze(maze)
     d.set_startx(startx)
     d.set_starty(starty)
