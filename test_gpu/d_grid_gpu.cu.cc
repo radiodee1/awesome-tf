@@ -6,18 +6,18 @@
 #include <stdio.h>
 #define SIZE	10
 
-    __global__ void VectorAdd(  int *in,  int n)
+    __global__ void VectorAdd(  int *in, int * out, int n)
     {
         int i = threadIdx.x;
 
         if (i < n)
-            in[i] = in[i] + i;
+            out[i] = in[i] + i;
     }
 
     
-    void run( int * in){//, int * out) {
+    void run( int * in, int * out) {
         
-        VectorAdd<<< 1, SIZE >>>(  in,  SIZE);
+        VectorAdd<<< 1, SIZE >>>(  in, out,  SIZE);
         
         for (int i = 0; i < SIZE; i ++) {
             printf("%i, " , in[i]);
