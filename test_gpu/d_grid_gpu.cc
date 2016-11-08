@@ -13,7 +13,7 @@ using namespace tensorflow;
     
 REGISTER_OP("GridGpu").Input("grid: int32").Output("prev: int32");    
     
-    void run( int * in, int * out);
+    void run(const int * in, int * out);
     
 class DGridGpuOp : public OpKernel {
   public:

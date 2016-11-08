@@ -6,7 +6,7 @@
 #include <stdio.h>
 #define SIZE	10
 
-    __global__ void VectorAdd(  int *in, int * out, int n)
+    __global__ void VectorAdd(const  int *in, int * out, int n)
     {
         int i = threadIdx.x;
 
@@ -15,7 +15,7 @@
     }
 
     
-    void run( int * in, int * out) {
+    void run( const int * in, int * out) {
         
         VectorAdd<<< 1, SIZE >>>(  in, out,  SIZE);
         
