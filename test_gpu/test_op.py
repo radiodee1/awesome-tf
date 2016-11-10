@@ -43,13 +43,4 @@ if __name__ == '__main__':
     d.set_maze_printout_wall_height(10 + 2)
 
     d.eval()
-    print "maze with elevations"
-    d.set_special_printout(True) 
-    d.print_output(maze )
     
-    print '----'
-    print "maze path"
-    d.set_special_printout(False)
-    d.print_output(maze ,d.get_output())
-
-

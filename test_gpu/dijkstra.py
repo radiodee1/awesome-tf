@@ -49,11 +49,11 @@ class Dijkstra(object):
         nums =  [0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9,0,1,2,3,4,5,6,7,8,9]
 
         #with tf.device('/gpu:0'):
-        self.maze = tf.Variable(tf.zeros([64], dtype=tf.int32), name="grid")
+        #self.maze = tf.Variable(tf.zeros([64], dtype=tf.int32), name="grid")
         #self.maze = tf.Variable(nums, name="grid")
         #tf.initialize_all_variables()        
         
-        #self.maze = nums
+        self.maze = nums
         print  self.maze
         if self.gpu : 
             self.grid_module = tf.load_op_library('d_grid_gpu.so')
@@ -63,7 +63,7 @@ class Dijkstra(object):
                         self.maze
                         #nums
                     ).eval()
-                    
+                print (self.output)
         else : 
             print " do simple cpu version here..."
         

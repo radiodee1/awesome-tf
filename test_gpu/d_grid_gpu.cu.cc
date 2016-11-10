@@ -19,9 +19,11 @@
         
         VectorAdd<<< 1, SIZE >>>(  in, out,  SIZE);
         
+        /*
         for (int i = 0; i < SIZE; i ++) {
-            printf("%i, " , in[i]);
+            printf("%i, " , out[i]);
         }
+        */
     }
 
 
