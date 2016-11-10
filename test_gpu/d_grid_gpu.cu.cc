@@ -20,6 +20,7 @@
         VectorAdd<<< 1, SIZE >>>(  in, out,  SIZE);
         
         /*
+        //these lines cause the segfault
         for (int i = 0; i < SIZE; i ++) {
             printf("%i, " , out[i]);
         }
