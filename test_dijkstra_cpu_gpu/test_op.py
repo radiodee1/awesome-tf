@@ -20,6 +20,7 @@ if __name__ == '__main__':
         d.set_height(s.get_height())
         d.set_wall_height(s.get_wall_height())
         d.set_maze_printout_wall_height(s.get_randomized_floors() + 2)
+        
     if s.get_is_gui():
         p = png.Interface(s)
         p.set_mapname(s.get_mapname())
@@ -29,6 +30,7 @@ if __name__ == '__main__':
     
     if not s.get_is_gui():
         d.eval()
+        print (d.output)
         print "maze with elevations"
         d.set_special_printout(True) 
         d.print_output(s.get_maze() )

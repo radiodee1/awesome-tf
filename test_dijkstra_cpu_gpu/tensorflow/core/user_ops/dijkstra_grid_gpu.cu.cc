@@ -30,7 +30,7 @@
         
         int a =(int) get_a(test, rank, grid_d);
         
-        if ((a >  vars_d[WALLHEIGHT]  * WALL_MULT && grid_d[rank] <= grid_d[test] )|| mask_d[test] == WALL || mask_d[rank] == WALL ) {
+        if ((a >  vars_d[WALLHEIGHT]  /* * WALL_MULT  */ && grid_d[rank] <= grid_d[test] )|| mask_d[test] == WALL || mask_d[rank] == WALL ) {
             
             return true; 
         }
@@ -363,7 +363,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     /////////////////////////
                     
                     
-                    if ( vars_d[STOPX] >= 0 && vars_d[STOPY] >= 0 && 
+                    if ( vars_d[STOPX] != -1 && vars_d[STOPY] != -1 && 
                         (rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d) && 
                             near_visited(-1, rank, VARS_SIGNATURE_CALL)  && 
                             (mask_d[rank] == UNDEFINED || mask_d[rank] == WORKING) && 
@@ -408,8 +408,17 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     
   }
   
-    void DijkstraGridGpuLauncherTF(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars) {
+    void DijkstraGridGpuLauncherTF(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars , int * vars_host) {
+    
         int size = size_x * size_y;
+        
+        cudaMemcpy( vars, vars_host, VARS_ARRAY_SIZE*sizeof(int), cudaMemcpyHostToDevice );
+        
+        cudaMemset(mask, 0, size*sizeof(int));
+        cudaMemset(dist, 0, size*sizeof(int));
+        cudaMemset(prev, 0, size*sizeof(int));
+        
+
         int SIZE = 1024;
         int blocks =  size/SIZE +1;
 
@@ -428,21 +437,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
 
         
         printf("time elapsed on gpu %f \n", delta_us);
-        /*
-        printf("vars block %i threads %i \n", blocks,threads);
-        printf("vars start x %i \n", vars[0]);
-        printf("vars start y %i \n", vars[1]);
-        printf("vars stop x %i \n", vars[2]);
-        printf("vars stop y %i \n", vars[3]);
-        printf("vars size x %i \n", vars[4]);
-        printf("vars size y %i \n", vars[5]);
-        printf("vars wallheight %i \n", vars[6]);
-        printf("vars found %i \n", vars[7]);
-        printf("vars step %i \n", vars[8]);
-        printf("vars fence1 %i \n", vars[FENCE1]);
-        printf("vars fence2 %i \n", vars[FENCE2]);
-        printf("start spot %i \n", mask[size_x * vars[STARTY] + vars[STARTX]  ]);
-        */
+        
 
     }
 

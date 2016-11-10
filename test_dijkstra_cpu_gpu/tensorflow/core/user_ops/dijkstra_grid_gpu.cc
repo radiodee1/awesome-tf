@@ -7,7 +7,7 @@
 
 
 REGISTER_OP("DijkstraGridGpu")
-    .Input("grid: int32")
+    .Input("grid: int32") //int32
     .Attr("start_x: int = 0")
     .Attr("start_y: int = 0")
     .Attr("stop_x: int = 28")
@@ -15,12 +15,12 @@ REGISTER_OP("DijkstraGridGpu")
     .Attr("size_x: int = 28")
     .Attr("size_y: int = 28")
     .Attr("wall_height: float = 2.5")
-    .Output("prev: int32");
+    .Output("prev: int32"); //int32
 
 
 
     void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars) ;
-    void DijkstraGridGpuLauncherTF(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars) ;
+    void DijkstraGridGpuLauncherTF(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars, int * vars_host) ;
     
 using namespace tensorflow;
 
@@ -82,17 +82,21 @@ class DijkstraGridGpuOp : public OpKernel {
     dist.data()[get_rank(start_x, start_y)] = 1;
     */
     
+    int * vars_data;
+    vars_data = (int *) malloc(  VARS_ARRAY_SIZE*sizeof(int));
+
     
-    vars.data()[STARTX] = start_x;
-    vars.data()[STARTY] = start_y;
-    vars.data()[STOPX] = stop_x;
-    vars.data()[STOPY] = stop_y;
-    vars.data()[SIZEX] = size_x;
-    vars.data()[SIZEY] = size_y;
-    vars.data()[WALLHEIGHT] = wall_height;
-    vars.data()[FOUND] = 0;
-    vars.data()[STEP] = 0;
+    vars_data[STARTX] = start_x;
+    vars_data[STARTY] = start_y;
+    vars_data[STOPX] = stop_x;
+    vars_data[STOPY] = stop_y;
+    vars_data[SIZEX] = size_x;
+    vars_data[SIZEY] = size_y;
+    vars_data[WALLHEIGHT] =  (WALL_MULT * wall_height);
+    vars_data[FOUND] = 0;
+    vars_data[STEP] = 0;
     
+
     
     //std::cout << VARS_ARRAY_SIZE<<" vars array size!! \n";
 
@@ -105,10 +109,10 @@ class DijkstraGridGpuOp : public OpKernel {
     vars_d = vars.data();
     
 
-    DijkstraGridGpuLauncher(size_x, size_y, grid_d, prev_d, mask_d, dist_d, vars_d) ;
+    DijkstraGridGpuLauncherTF(size_x, size_y, grid_d, prev_d, mask_d, dist_d, vars_d, vars_data) ;
                                 
 
-    
+    free(vars_data);
   }
   
   
@@ -140,5 +144,5 @@ class DijkstraGridGpuOp : public OpKernel {
     
 };
 
-//REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_GPU), DijkstraGridGpuOp);
-REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_CPU), DijkstraGridGpuOp);
+REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_GPU), DijkstraGridGpuOp);
+//REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_CPU), DijkstraGridGpuOp);
