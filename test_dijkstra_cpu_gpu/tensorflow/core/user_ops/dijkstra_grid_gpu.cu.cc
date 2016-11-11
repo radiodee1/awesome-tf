@@ -432,19 +432,6 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         cudaMemset(dist, 0, size*sizeof(int));
         cudaMemset(prev, 0, size*sizeof(int)); 
         
-        /*
-        //printf("time elapsed on gpu %f \n", delta_us);
-        //printf("vars block %i threads %i \n", blocks,threads);
-        printf("vars start x %i \n", vars_host[0]);
-        printf("vars start y %i \n", vars_host[1]);
-        printf("vars stop x %i \n", vars_host[2]);
-        printf("vars stop y %i \n", vars_host[3]);
-        printf("vars size x %i \n", vars_host[4]);
-        printf("vars size y %i \n", vars_host[5]);
-        printf("vars wallheight %i \n", vars_host[6]);
-        printf("vars found %i \n", vars_host[7]);
-        printf("vars step %i \n", vars_host[8]);
-        */
         
         int SIZE = 1024;
         int blocks =  size/SIZE +1;
@@ -465,25 +452,23 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         
         printf("time elapsed on gpu %f \n---\n", delta_us);
         
-        showVariable(prev, size);
-        showVariable(mask, size);
-        showVariable(vars,VARS_ARRAY_SIZE);
-        //cudaMemcpy( vars_host, vars, VARS_ARRAY_SIZE*sizeof(int), cudaMemcpyDeviceToHost );
-        //printf("vars wallheight %i \n", vars_host[6]);
-        //printf("vars found %i \n", vars_host[7]);
-        //printf("vars step %i \n", vars_host[8]);
+        //showVariable(prev, size);
+        //showVariable(mask, size);
+        //showVariable(vars,VARS_ARRAY_SIZE);
+        
         
     }
 
+    /*
     void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars ) {
         
-        int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;//, * lock1_d, * lock2_d;
+        int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
     
         int size = size_x * size_y;
         int SIZE = 1024;
         int blocks =  size/SIZE +1;
 
-        int threads = SIZE;//1 + (int) (size /(float) blocks);
+        int threads = SIZE;
         if (blocks == 1 && size < SIZE ) threads = size;
         
         cudaMalloc( &grid_d, size*sizeof(int));
@@ -491,20 +476,16 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         cudaMalloc( &mask_d, size*sizeof(int));
         cudaMalloc( &dist_d, size*sizeof(int));
         cudaMalloc( &vars_d, VARS_ARRAY_SIZE*sizeof(int));
-        //cudaMalloc( &lock1_d, size*sizeof(int));
-        //cudaMalloc( &lock2_d, size*sizeof(int));
-
+        
         cudaMemcpy( grid_d, grid, size*sizeof(int), cudaMemcpyHostToDevice );
-        //cudaMemcpy( prev_d, prev, size*sizeof(int), cudaMemcpyHostToDevice );
-        //cudaMemcpy( mask_d, mask, size*sizeof(int), cudaMemcpyHostToDevice );
-        //cudaMemcpy( dist_d, dist, size*sizeof(int), cudaMemcpyHostToDevice );
+        
         cudaMemcpy( vars_d, vars, VARS_ARRAY_SIZE*sizeof(int), cudaMemcpyHostToDevice );
         
         cudaMemset(mask_d, 0, size*sizeof(int));
         cudaMemset(dist_d, 0, size*sizeof(int));
         cudaMemset(prev_d, 0, size*sizeof(int));
-        //cudaMemset(lock1_d, 0, size*sizeof(int));
-        //cudaMemset(lock2_d, 0, size*sizeof(int));
+
+
         
         struct timespec start, end;
 
@@ -522,43 +503,16 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         cudaMemcpy( mask, mask_d, size*sizeof(int), cudaMemcpyDeviceToHost );
         cudaMemcpy( dist, dist_d, size*sizeof(int), cudaMemcpyDeviceToHost );
         
-        printf("time elapsed on gpu %f \n", delta_us);
-        printf("vars block %i threads %i \n", blocks,threads);
-        printf("vars start x %i \n", vars[0]);
-        printf("vars start y %i \n", vars[1]);
-        printf("vars stop x %i \n", vars[2]);
-        printf("vars stop y %i \n", vars[3]);
-        printf("vars size x %i \n", vars[4]);
-        printf("vars size y %i \n", vars[5]);
-        printf("vars wallheight %i \n", vars[6]);
-        printf("vars found %i \n", vars[7]);
-        printf("vars step %i \n", vars[8]);
-        printf("vars fence1 %i \n", vars[FENCE1]);
-        printf("vars fence2 %i \n", vars[FENCE2]);
-        printf("start spot %i \n", mask[size_x * vars[STARTY] + vars[STARTX]  ]);
         
-        /*
-        for (int i = 0; i < size; i ++) {
-            printf(",%i ", prev[i]);
-            if (i % size_x == size_x -1) printf("\n");
-        }
-        printf(" size %i \n",size);
-        */
-
-        
-        //free(grid);
-        //free(mask);
-        //free(dist);
-        //free(vars);
         
         cudaFree(grid_d);
         cudaFree(prev_d);
         cudaFree(mask_d);
         cudaFree(dist_d);
         cudaFree(vars_d);
-        //cudaFree(lock1_d);
-        //cudaFree(lock2_d);
+        
     }
+    */
 
 
 

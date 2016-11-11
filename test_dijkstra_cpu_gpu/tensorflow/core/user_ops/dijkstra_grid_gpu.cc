@@ -17,9 +17,6 @@ REGISTER_OP("DijkstraGridGpu")
     .Attr("wall_height: float = 2.5")
     .Output("prev: int32"); 
 
-
-
-    //void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars) ;
     void DijkstraGridGpuLauncherTF(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars, int * vars_host) ;
     
 using namespace tensorflow;
@@ -75,12 +72,6 @@ class DijkstraGridGpuOp : public OpKernel {
     auto vars = vars_tensor.template flat<int32>();
     
     
-    /*
-    for (int rank = 0; rank < prev.size(); rank++) prev.data()[rank] = UNDEFINED;
-    mask.data() [get_rank(start_x, start_y)] = VISITED;
-    prev.data()[get_rank(start_x, start_y)] = -1;
-    dist.data()[get_rank(start_x, start_y)] = 1;
-    */
     
     int * vars_data;
     vars_data = (int *) malloc(  VARS_ARRAY_SIZE*sizeof(int));
@@ -143,4 +134,4 @@ class DijkstraGridGpuOp : public OpKernel {
 };
 
 REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_GPU), DijkstraGridGpuOp);
-//REGISTER_KERNEL_BUILDER(Name("DijkstraGridGpu").Device(DEVICE_CPU), DijkstraGridGpuOp);
+
