@@ -95,10 +95,8 @@ class DijkstraGridGpuOp : public OpKernel {
     vars_data[WALLHEIGHT] =  ( wall_height);
     vars_data[FOUND] = 0;
     vars_data[STEP] = 0;
+    vars_data[FENCE1] = 0;
     
-
-    
-    //std::cout << VARS_ARRAY_SIZE<<" vars array size!! \n";
 
     int * grid_d, * prev_d, * mask_d, * dist_d, * vars_d;
 
@@ -138,9 +136,9 @@ class DijkstraGridGpuOp : public OpKernel {
     Tensor * output_tensor;
     
     
-    int get_x(int rank) { return -1 + rank - (size_x * (  (int) ( rank / size_x ) )) ; }
-    int get_y(int rank) { return 0 +  (int) rank / size_x ; }
-    int get_rank(int x, int y) {return 1+ ( (y ) * size_x ) + x  ; }
+    //int get_x(int rank) { return -1 + rank - (size_x * (  (int) ( rank / size_x ) )) ; }
+    //int get_y(int rank) { return 0 +  (int) rank / size_x ; }
+    //int get_rank(int x, int y) {return 1+ ( (y ) * size_x ) + x  ; }
     
 };
 

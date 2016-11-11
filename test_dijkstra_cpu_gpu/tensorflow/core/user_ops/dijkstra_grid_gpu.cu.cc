@@ -371,6 +371,8 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
 
                             atomicExch(&mask_d[rank ], VISITED);
                             atomicExch(&vars_d[FOUND], FOUND_CONST);
+                            
+                            vars_d[FENCE2] = rank;
                         }
                         
                     }
@@ -427,7 +429,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         
         cudaMemset(mask, 0, size*sizeof(int));
         cudaMemset(dist, 0, size*sizeof(int));
-        cudaMemset(prev, 0, size*sizeof(int));
+        //cudaMemset(prev, 0, size*sizeof(int)); // <-- needed???
         
         /*
         //printf("time elapsed on gpu %f \n", delta_us);
@@ -446,7 +448,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         int SIZE = 1024;
         int blocks =  size/SIZE +1;
 
-        int threads = SIZE;//1 + (int) (size /(float) blocks); 
+        int threads = SIZE;
         if (blocks == 1 && size < SIZE ) threads = size;
         
         struct timespec start, end;
@@ -463,6 +465,8 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         printf("time elapsed on gpu %f \n---\n", delta_us);
         
         showVariable(prev, size);
+        showVariable(mask, size);
+        showVariable(vars,VARS_ARRAY_SIZE);
         //cudaMemcpy( vars_host, vars, VARS_ARRAY_SIZE*sizeof(int), cudaMemcpyDeviceToHost );
         //printf("vars wallheight %i \n", vars_host[6]);
         //printf("vars found %i \n", vars_host[7]);
