@@ -14,9 +14,9 @@
 #define VARS_SIGNATURE_CALL   grid_d,prev_d,mask_d,dist_d,vars_d 
 
 
-    __device__ int get_x(int rank, int * vars_d) { return -1 + rank - (vars_d[SIZEX] * (  (int) ( rank / vars_d[SIZEX] ) )) ; } 
+    __device__ int get_x(int rank, int * vars_d) { return 0 + rank - (vars_d[SIZEX] * (  (int) ( rank / vars_d[SIZEX] ) )) ; } //-1
     __device__ int get_y(int rank, int * vars_d) { return 0 +  (int) rank / vars_d[SIZEX]  ; } 
-    __device__ int get_rank(int x, int y, int * vars_d) {return abs( 1 + ( (y ) * vars_d[SIZEX] ) + x )  ; } 
+    __device__ int get_rank(int x, int y, int * vars_d) {return abs( 0 + ( (y ) * vars_d[SIZEX] ) + x )  ; } // +1
     __device__ bool is_filled(int * mask, int size) {bool value = true; for(int i = 0; i < size; i ++) {if( mask[i] == UNDEFINED) value = false; } ; return value;}
     
     
@@ -372,7 +372,8 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                             atomicExch(&mask_d[rank ], VISITED);
                             atomicExch(&vars_d[FOUND], FOUND_CONST);
                             
-                            vars_d[FENCE2] = rank;
+                            vars_d[FENCE2] = get_x(rank, vars_d);
+                            vars_d[FENCE3] = get_y(rank, vars_d);
                         }
                         
                     }
@@ -429,7 +430,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         
         cudaMemset(mask, 0, size*sizeof(int));
         cudaMemset(dist, 0, size*sizeof(int));
-        //cudaMemset(prev, 0, size*sizeof(int)); // <-- needed???
+        cudaMemset(prev, 0, size*sizeof(int)); 
         
         /*
         //printf("time elapsed on gpu %f \n", delta_us);
