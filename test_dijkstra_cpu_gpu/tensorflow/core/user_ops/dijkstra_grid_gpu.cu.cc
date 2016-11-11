@@ -30,7 +30,7 @@
         
         int a =(int) get_a(test, rank, grid_d);
         
-        if ((a >  vars_d[WALLHEIGHT]  /* * WALL_MULT  */ && grid_d[rank] <= grid_d[test] )|| mask_d[test] == WALL || mask_d[rank] == WALL ) {
+        if ((a >  vars_d[WALLHEIGHT]   * WALL_MULT   && grid_d[rank] <= grid_d[test] )|| mask_d[test] == WALL || mask_d[rank] == WALL ) {
             
             return true; 
         }
@@ -137,7 +137,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     int size_x = vars_d[SIZEX];
     int size_y = vars_d[SIZEY];
     
-    while(  vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY] +1) {
+    while(  vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY]  + 1) {
         
         
         
@@ -220,8 +220,6 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     if (rank < size_x * size_y) fence(&vars_d[FENCE1], (size_x * size_y ) );
     vars_d[STEP] = 0;
     
-    
-    
     if (mask_d[rank] != WALL) mask_d[rank] = UNDEFINED;  
     
     mask_d[get_rank( vars_d[STARTX], vars_d[STARTY], vars_d) ] = VISITED;
@@ -230,7 +228,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     
     int count;
                     
-    while( vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY] * vars_d[SIZEX] ) {
+    while( vars_d[FOUND] == 0 && vars_d[STEP] < vars_d[SIZEX] *  vars_d[SIZEY] * vars_d[SIZEX]  ) {
         
         
         left = 0;
@@ -363,7 +361,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
                     /////////////////////////
                     
                     
-                    if ( vars_d[STOPX] != -1 && vars_d[STOPY] != -1 && 
+                    if ( vars_d[STOPX] >= 0 && vars_d[STOPY] >= 0 && 
                         (rank == get_rank( vars_d[STOPX], vars_d[STOPY] , vars_d) && 
                             near_visited(-1, rank, VARS_SIGNATURE_CALL)  && 
                             (mask_d[rank] == UNDEFINED || mask_d[rank] == WORKING) && 
@@ -408,6 +406,19 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
     
   }
   
+    void showVariable(int * device, int size ) {
+        int size_x = 8;
+        int * host;
+        host = (int *) malloc(  size*sizeof(int));
+        cudaMemcpy( host, device, size*sizeof(int), cudaMemcpyDeviceToHost );
+        for (int i = 0; i < size; i ++) {
+            printf(",%i ", host[i]);
+            if (i % size_x == size_x -1) printf("\n");
+        }
+        printf(" size %i \n",size);
+        free(host);
+    }
+  
     void DijkstraGridGpuLauncherTF(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars , int * vars_host) {
     
         int size = size_x * size_y;
@@ -418,7 +429,20 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         cudaMemset(dist, 0, size*sizeof(int));
         cudaMemset(prev, 0, size*sizeof(int));
         
-
+        /*
+        //printf("time elapsed on gpu %f \n", delta_us);
+        //printf("vars block %i threads %i \n", blocks,threads);
+        printf("vars start x %i \n", vars_host[0]);
+        printf("vars start y %i \n", vars_host[1]);
+        printf("vars stop x %i \n", vars_host[2]);
+        printf("vars stop y %i \n", vars_host[3]);
+        printf("vars size x %i \n", vars_host[4]);
+        printf("vars size y %i \n", vars_host[5]);
+        printf("vars wallheight %i \n", vars_host[6]);
+        printf("vars found %i \n", vars_host[7]);
+        printf("vars step %i \n", vars_host[8]);
+        */
+        
         int SIZE = 1024;
         int blocks =  size/SIZE +1;
 
@@ -436,9 +460,14 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         float delta_us = (float) (end.tv_nsec - start.tv_nsec)   / 1000;
 
         
-        printf("time elapsed on gpu %f \n", delta_us);
+        printf("time elapsed on gpu %f \n---\n", delta_us);
         
-
+        showVariable(prev, size);
+        //cudaMemcpy( vars_host, vars, VARS_ARRAY_SIZE*sizeof(int), cudaMemcpyDeviceToHost );
+        //printf("vars wallheight %i \n", vars_host[6]);
+        //printf("vars found %i \n", vars_host[7]);
+        //printf("vars step %i \n", vars_host[8]);
+        
     }
 
     void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid, int * prev, int * mask, int * dist, int * vars ) {
@@ -449,7 +478,7 @@ __global__ void DijkstraGridGpu( VARS_SIGNATURE_DECLARE )  {
         int SIZE = 1024;
         int blocks =  size/SIZE +1;
 
-        int threads = SIZE;//1 + (int) (size /(float) blocks); 
+        int threads = SIZE;//1 + (int) (size /(float) blocks);
         if (blocks == 1 && size < SIZE ) threads = size;
         
         cudaMalloc( &grid_d, size*sizeof(int));

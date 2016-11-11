@@ -7,7 +7,7 @@
 
 
 REGISTER_OP("DijkstraGridGpu")
-    .Input("grid: int32") //int32
+    .Input("grid: int32") 
     .Attr("start_x: int = 0")
     .Attr("start_y: int = 0")
     .Attr("stop_x: int = 28")
@@ -15,11 +15,11 @@ REGISTER_OP("DijkstraGridGpu")
     .Attr("size_x: int = 28")
     .Attr("size_y: int = 28")
     .Attr("wall_height: float = 2.5")
-    .Output("prev: int32"); //int32
+    .Output("prev: int32"); 
 
 
 
-    void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars) ;
+    //void DijkstraGridGpuLauncher(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars) ;
     void DijkstraGridGpuLauncherTF(int size_x, int size_y, int * grid_d, int * prev_d, int * mask_d, int * dist_d, int * vars, int * vars_host) ;
     
 using namespace tensorflow;
@@ -92,7 +92,7 @@ class DijkstraGridGpuOp : public OpKernel {
     vars_data[STOPY] = stop_y;
     vars_data[SIZEX] = size_x;
     vars_data[SIZEY] = size_y;
-    vars_data[WALLHEIGHT] =  (WALL_MULT * wall_height);
+    vars_data[WALLHEIGHT] =  ( wall_height);
     vars_data[FOUND] = 0;
     vars_data[STEP] = 0;
     
