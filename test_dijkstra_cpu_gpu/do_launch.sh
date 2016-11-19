@@ -10,7 +10,7 @@
 ## takes at least 2min 21sec on cpu
 #./test_op.py -mapname img/maze.png -width 480 -height 480
 
-./test_op.py -height 8 -width 8  -stopx 7 -stopy 6 -startx 4 -starty 0 -w-height 20.5 -gpu
+#./test_op.py -height 8 -width 8  -stopx 7 -stopy 6 -startx 4 -starty 0 -w-height 20.5 -gpu
 
 #./test_op.py -mapname img/maze.png -width 480 -height 480 -gpu -w-height 50
 
@@ -19,7 +19,9 @@
 
 #./test_op.py -height 18 -width 18  -stopx 6 -stopy 17 -startx 4 -starty 0  -w-height 50 -gpu
 
-#./test_op.py -height 70 -width 70  -mapname img/smallmaze.png -gpu -w-height 50 
+#./test_op.py -height 70 -width 70  -mapname img/smallmaze.png  -w-height 50 
+
+./test_op.py -height 70 -width 70  -mapname img/smallmaze.png -gpu -w-height 50 
 
 ## takes 8.626 secs
 #./test_op.py -mapname img/map.png -width 70 -height 70  -stopx 35 -stopy 6 -startx 47 -starty 57 -gpu -w-height 50 
