@@ -3,6 +3,7 @@
 import setup_readfile as setup 
 import dijkstra
 import setup_png as png
+import setup_menu as menu
 
 if __name__ == '__main__': 
     s = setup.SU()
@@ -22,6 +23,9 @@ if __name__ == '__main__':
         d.set_maze_printout_wall_height(s.get_randomized_floors() + 2)
         
     if s.get_is_gui():
+        m = menu.Interface()
+        m.show_window()
+        s.mapname = m.mapname
         p = png.Interface(s)
         p.set_mapname(s.get_mapname())
         p.solve_png(d,s)

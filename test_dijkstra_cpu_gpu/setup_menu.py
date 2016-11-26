@@ -1,3 +1,4 @@
+#!/usr/bin/python
 
 from Tkinter import Tk
 from tkFileDialog import askopenfilename
@@ -18,12 +19,12 @@ class Interface(Gtk.Window) :
         self.originalarray =  [(0,"img/map.png" , "first map"),
                         (1,"img/smallmap.png","second map"),
                         (2,"img/maze.png", "maze"),
-                        (5,"img/notthere.png","not there")]
+                        (3,"img/notthere.png","not there")]
         
         self.testarray =     [(0,"img/map.png" , "first map"),
                         (1,"img/smallmap.png","second map"),
                         (2,"img/maze.png", "maze"),
-                        (5,"img/notthere.png","not there")]
+                        (3,"img/notthere.png","not there")]
         
         Gtk.Window.__init__(self, title="Maps")
         self.set_border_width(10)
@@ -73,19 +74,17 @@ class Interface(Gtk.Window) :
     def on_selection_changed(self, widget):
         model, treeiter = widget.get_selected()
         if treeiter != None:
-            print("selected", model[treeiter][0] )
             self.mapname = self.originalarray[int(model[treeiter][0])][1]
-            print (self.mapname)
+            
         
     def on_image_button_clicked(self, widget):
-        print("Hello World")
         Tk().withdraw() 
         self.mapname = askopenfilename() 
         print(self.mapname)
         if len(self.mapname) != 0:
             self.label.set_text('...' + self.mapname[ - 10 :])
-            self.testarray.append((9,'...'+ self.mapname[-10: ],'...'+ self.mapname[-10:]))
-            self.originalarray.append( (9,  self.mapname, self.mapname ) )
+            self.testarray.append((len(self.testarray) ,'...'+ self.mapname[-10: ],'...'+ self.mapname[-10:]))
+            self.originalarray.append( ( len(self.testarray),  self.mapname, self.mapname ) )
         print(self.testarray)
         print(self.originalarray)
         self.liststore = self.make_list()
@@ -96,6 +95,7 @@ class Interface(Gtk.Window) :
         
     def on_confirm_button_clicked(self, widget):
         print(self.entry.get_text())
+        Gtk.main_quit()
         #self.label.set_text(self.entry.get_text())
         
     def make_list(self):
@@ -105,6 +105,12 @@ class Interface(Gtk.Window) :
         for line in self.testarray:
             liststore.append (list(line))
         return liststore
+        
+    def show_window(self):
+        win = self#Interface()
+        win.connect("delete-event", Gtk.main_quit)
+        win.show_all()
+        Gtk.main()
         
 if __name__ == '__main__': 
     #a = Interface();
