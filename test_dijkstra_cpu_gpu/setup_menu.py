@@ -14,6 +14,7 @@ class Interface(Gtk.Window) :
     def __init__(self) :
         #self.mz = []
         self.mapname = "img/map.png"
+        self.maptitle = "dijkstra-prog"
         self.side = 0
         
         self.originalarray =  [(0,"img/map.png" , "first map"),
@@ -83,7 +84,8 @@ class Interface(Gtk.Window) :
         model, treeiter = widget.get_selected()
         if treeiter != None:
             self.mapname = self.originalarray[int(model[treeiter][0])][1]
-            
+            if  len(self.originalarray[int(model[treeiter][0])][2]) != 0:
+                self.maptitle = self.originalarray[int(model[treeiter][0])][2]
         
     def on_image_button_clicked(self, widget):
         Tk().withdraw() 
@@ -91,8 +93,8 @@ class Interface(Gtk.Window) :
         print(self.mapname)
         if len(self.mapname) != 0:
             self.label.set_text('...' + self.mapname[ - 10 :])
-            self.testarray.append((len(self.testarray) ,'...'+ self.mapname[-10: ],'...'+ self.mapname[-10:]))
-            self.originalarray.append( ( len(self.testarray),  self.mapname, self.mapname ) )
+            self.testarray.append((len(self.testarray) ,'...'+ self.mapname[-10: ], self.entry.get_text() ))
+            self.originalarray.append( ( len(self.testarray),  self.mapname, self.entry.get_text() ) )
         print(self.testarray)
         print(self.originalarray)
         self.liststore = self.make_list()
@@ -103,20 +105,20 @@ class Interface(Gtk.Window) :
         
     def on_confirm_button_clicked(self, widget):
         print(self.entry.get_text())
-        self.side = self.spinbutton.get_value()
+        self.side = self.spinbutton.get_value_as_int()
         Gtk.main_quit()
+        self.destroy()
         #self.label.set_text(self.entry.get_text())
         
     def make_list(self):
         """ do db things to generate list view """
         liststore = Gtk.ListStore(int, str, str)
-        
         for line in self.testarray:
             liststore.append (list(line))
         return liststore
         
     def show_window(self):
-        win = self#Interface()
+        win = self #Interface()
         win.connect("delete-event", Gtk.main_quit)
         win.show_all()
         Gtk.main()

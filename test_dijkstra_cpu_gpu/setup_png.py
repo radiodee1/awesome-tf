@@ -18,6 +18,7 @@ class Interface(object) :
 		self.map  = []
 		self.quit = 0	
 		self.maze = []
+		self.maptitle = "dijkstra-prog"
 		
 		self.block_screen_1 = True ## select smaller map
 		self.block_screen_2 = True ## select start and stop
@@ -115,7 +116,7 @@ class Interface(object) :
 		## display first screen ##
 		screensurf = surface
 		screen = pg.display.set_mode((w, h))
-		pg.display.set_caption('dijkstra-prog', 'dijkstra-prog')
+		pg.display.set_caption(self.maptitle, self.maptitle)
 		screen.fill((white))
 		
 		## skip if all coordinates are specified at command line ##

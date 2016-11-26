@@ -29,6 +29,7 @@ if __name__ == '__main__':
         s.width = int(m.side)
         s.height = int( m.side)
         p = png.Interface(s)
+        p.maptitle = m.maptitle
         p.set_mapname(s.get_mapname())
         p.solve_png(d,s)
         
