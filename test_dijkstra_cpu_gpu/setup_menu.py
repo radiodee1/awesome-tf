@@ -13,16 +13,16 @@ class Interface(Gtk.Window) :
     
     def __init__(self) :
         #self.mz = []
-        self.mapname = ""
-        self.quit = 0
+        self.mapname = "img/map.png"
+        self.side = 0
         
         self.originalarray =  [(0,"img/map.png" , "first map"),
-                        (1,"img/smallmap.png","second map"),
+                        (1,"img/smallmaze.png","second map"),
                         (2,"img/maze.png", "maze"),
                         (3,"img/notthere.png","not there")]
         
         self.testarray =     [(0,"img/map.png" , "first map"),
-                        (1,"img/smallmap.png","second map"),
+                        (1,"img/smallmaze.png","second map"),
                         (2,"img/maze.png", "maze"),
                         (3,"img/notthere.png","not there")]
         
@@ -36,7 +36,7 @@ class Interface(Gtk.Window) :
         self.button.connect("clicked", self.on_image_button_clicked)
         self.grid.add(self.button)
         
-        self.label = Gtk.Label("display-name")
+        self.label = Gtk.Label("display name:")
         self.grid.attach(self.label, 0, 1, 1, 1)
         
         self.entry = Gtk.Entry()
@@ -48,6 +48,14 @@ class Interface(Gtk.Window) :
         self.confirm.connect("clicked", self.on_confirm_button_clicked)
         self.grid.attach(self.confirm, 1, 0, 1, 1)
         
+        self.label_adjust = Gtk.Label("magnifying size:")
+        self.grid.attach(self.label_adjust, 0, 2, 1, 1)
+        
+        adjustment = Gtk.Adjustment(70, 0, 480, 10, 10, 0)
+        self.spinbutton = Gtk.SpinButton()
+        self.spinbutton.set_numeric(True)
+        self.spinbutton.set_adjustment(adjustment)
+        self.grid.attach(self.spinbutton,1,2,1,1)
         
         self.liststore = self.make_list()
         self.treeview = Gtk.TreeView(self.liststore)
@@ -65,7 +73,7 @@ class Interface(Gtk.Window) :
         self.select = self.treeview.get_selection()
         self.select.connect("changed", self.on_selection_changed)
         
-        self.grid.attach(self.treeview, 0,2,3,3)
+        self.grid.attach(self.treeview, 0,3,3,3)
         
     def enter_callback(self, widget):
         print (self.entry.get_text())
@@ -95,6 +103,7 @@ class Interface(Gtk.Window) :
         
     def on_confirm_button_clicked(self, widget):
         print(self.entry.get_text())
+        self.side = self.spinbutton.get_value()
         Gtk.main_quit()
         #self.label.set_text(self.entry.get_text())
         

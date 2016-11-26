@@ -26,6 +26,8 @@ if __name__ == '__main__':
         m = menu.Interface()
         m.show_window()
         s.mapname = m.mapname
+        s.width = int(m.side)
+        s.height = int( m.side)
         p = png.Interface(s)
         p.set_mapname(s.get_mapname())
         p.solve_png(d,s)
